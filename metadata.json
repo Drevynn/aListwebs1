@@ -1,0 +1,6 @@
+{
+  "name": "AlistWebs",
+  "description": "AI-powered digital headquarters for Musicians, Filmmakers, Actors, and Writers. Schema-first components, pre-rendered Edge CDN delivery, lossless media, showreels, casting decks, and manuscripts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

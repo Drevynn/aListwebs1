@@ -1,0 +1,305 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+/* Design System for Creative AI Website Builder */
+
+@layer base {
+  :root {
+    --background: 350 75% 8%; /* #250409 Deep Hollywood Crimson Red */
+    --foreground: 45 60% 97%; /* #fefdf8 Crisp warm champagne text */
+
+    --card: 350 55% 12%; /* #300810 Deep wine card elevation */
+    --card-foreground: 45 60% 97%;
+
+    --popover: 350 55% 12%;
+    --popover-foreground: 45 60% 97%;
+
+    --primary: 43 96% 54%; /* #f59e0b Radiant Hollywood Gold */
+    --primary-foreground: 350 85% 10%; /* #29030a Deep Burgundy Black */
+
+    --secondary: 345 65% 20%; /* #541122 Rich Burgundy */
+    --secondary-foreground: 45 70% 92%;
+
+    --muted: 350 45% 16%; /* #3c0c16 Velveteen Red */
+    --muted-foreground: 350 25% 72%; /* #d8b7be High contrast warm text */
+
+    --accent: 345 78% 25%; /* #710f27 Classic Burgundy Accent */
+    --accent-foreground: 43 96% 75%; /* Warm Gold */
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 348 45% 24%; /* #591b29 Deep Burgundy border */
+    --input: 348 45% 24%;
+    --ring: 43 96% 54%; /* Gold ring */
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --glow-primary: 43 96% 54%;
+    --glow-accent: 345 78% 30%;
+    --glass: 350 65% 11% / 0.88;
+    --glass-border: 348 45% 28%;
+
+    /* Burgundy palette tokens */
+    --burgundy: 345 78% 26%; /* #751028 Imperial Burgundy */
+    --burgundy-light: 345 68% 38%; /* #a22442 Wine Rose */
+    --burgundy-dark: 345 85% 14%; /* #420513 Black Cherry */
+
+    /* Radiant Hollywood Gold palette */
+    --gold: 43 96% 54%; /* #f59e0b Glowing Gold */
+    --gold-light: 48 100% 68%; /* #fde047 Bright Gold Highlight */
+    --gold-dark: 38 92% 40%; /* #b45309 Burnished Gold Depth */
+
+    /* Red Wallpaper Background Gradients */
+    --gradient-hero: radial-gradient(circle at 18% 15%, rgba(220, 38, 38, 0.38) 0%, transparent 50%),
+                     radial-gradient(circle at 82% 25%, rgba(128, 0, 32, 0.50) 0%, transparent 45%),
+                     radial-gradient(circle at 50% 85%, rgba(239, 68, 68, 0.28) 0%, transparent 50%),
+                     radial-gradient(circle at 75% 70%, rgba(185, 28, 28, 0.35) 0%, transparent 40%),
+                     #1a0408;
+    --gradient-card: linear-gradient(145deg, rgba(245, 158, 11, 0.05) 0%, rgba(117, 16, 40, 0.35) 100%);
+    --gradient-cta: linear-gradient(135deg, #751028 0%, #991b3b 45%, #d97706 100%);
+    --gradient-accent: linear-gradient(135deg, #640d21 0%, #8a132e 45%, #eab308 100%);
+    --gradient-text: linear-gradient(135deg, #fffdf5 0%, #fde047 50%, #f59e0b 100%);
+    --gradient-gold: linear-gradient(135deg, #b45309 0%, #f59e0b 45%, #fef08a 70%, #d97706 100%);
+    --gradient-gold-text: linear-gradient(135deg, #fff0a3 0%, #f59e0b 50%, #b45309 100%);
+
+    /* Shadows */
+    --shadow-glow: 0 0 60px -12px rgba(245, 158, 11, 0.40);
+    --shadow-card: 0 20px 45px -10px rgba(20, 2, 6, 0.75);
+    --shadow-button: 0 10px 30px -10px rgba(117, 16, 40, 0.70);
+    --shadow-gold: 0 0 35px -8px rgba(245, 158, 11, 0.50);
+
+    --sidebar-background: 350 75% 9%;
+    --sidebar-foreground: 45 60% 97%;
+    --sidebar-primary: 43 96% 54%;
+    --sidebar-primary-foreground: 350 85% 10%;
+    --sidebar-accent: 345 65% 18%;
+    --sidebar-accent-foreground: 43 96% 75%;
+    --sidebar-border: 348 45% 24%;
+    --sidebar-ring: 43 96% 54%;
+  }
+
+  .dark {
+    --background: 350 75% 8%;
+    --foreground: 45 60% 97%;
+    --card: 350 55% 12%;
+    --card-foreground: 45 60% 97%;
+    --popover: 350 55% 12%;
+    --popover-foreground: 45 60% 97%;
+    --muted: 350 45% 16%;
+    --muted-foreground: 350 25% 72%;
+    --border: 348 45% 24%;
+    --input: 348 45% 24%;
+  }
+
+  .light, html.light {
+    --background: 352 65% 97%; /* #fff1f3 Delicate rose velvet red canvas */
+    --foreground: 350 80% 12%; /* #2b030b Deep Wine Noir text */
+
+    --card: 0 0% 100%; /* #ffffff pristine white cards */
+    --card-foreground: 350 80% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 350 80% 12%;
+
+    --primary: 38 92% 44%; /* #d97706 Deep Royal Gold */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 350 45% 92%; /* #fce7eb */
+    --secondary-foreground: 350 80% 12%;
+
+    --muted: 350 40% 92%;
+    --muted-foreground: 350 40% 30%; /* High contrast wine body */
+
+    --accent: 345 75% 28%; /* Burgundy */
+    --accent-foreground: 45 95% 95%;
+
+    --destructive: 0 84.2% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 350 35% 82%; /* #eec8cf */
+    --input: 350 35% 82%;
+    --ring: 38 92% 44%;
+
+    /* Custom tokens */
+    --glow-primary: 38 92% 44% / 0.20;
+    --glow-accent: 345 75% 28% / 0.20;
+    --glass: 0 0% 100% / 0.92;
+    --glass-border: 350 35% 82%;
+
+    --burgundy: 345 78% 28%;
+    --burgundy-light: 345 65% 40%;
+    --burgundy-dark: 345 85% 15%;
+
+    --gold: 38 92% 44%;
+    --gold-light: 43 96% 54%;
+    --gold-dark: 34 85% 32%;
+
+    /* Red Wallpaper Gradients */
+    --gradient-hero: radial-gradient(circle at 15% 15%, rgba(254, 205, 211, 0.75) 0%, transparent 45%),
+                     radial-gradient(circle at 85% 20%, rgba(254, 226, 226, 0.80) 0%, transparent 40%),
+                     radial-gradient(circle at 50% 85%, rgba(254, 202, 202, 0.65) 0%, transparent 50%),
+                     #fff1f2;
+    --gradient-card: linear-gradient(145deg, #ffffff 0%, #fff5f6 100%);
+    --gradient-cta: linear-gradient(135deg, #751028 0%, #991b3b 50%, #b45309 100%);
+    --gradient-accent: linear-gradient(135deg, #751028 0%, #991b3b 50%, #d97706 100%);
+    --gradient-text: linear-gradient(135deg, #420513 0%, #751028 50%, #b45309 100%);
+    --gradient-gold: linear-gradient(135deg, #b45309 0%, #d97706 40%, #f59e0b 60%, #b45309 100%);
+    --gradient-gold-text: linear-gradient(135deg, #92400e 0%, #b45309 50%, #78350f 100%);
+
+    /* Shadows */
+    --shadow-glow: 0 0 60px -12px rgba(180, 83, 9, 0.25);
+    --shadow-card: 0 10px 30px -10px rgba(66, 5, 19, 0.08), 0 1px 3px 0 rgba(66, 5, 19, 0.05);
+    --shadow-button: 0 10px 25px -10px rgba(117, 16, 40, 0.35);
+    --shadow-gold: 0 0 30px -8px rgba(217, 119, 6, 0.40);
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 350 80% 12%;
+    --sidebar-primary: 38 92% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 350 45% 92%;
+    --sidebar-accent-foreground: 350 80% 12%;
+    --sidebar-border: 350 35% 82%;
+    --sidebar-ring: 38 92% 44%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+    background: var(--gradient-hero);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/85 dark:bg-card/75 backdrop-blur-md border border-border rounded-2xl;
+    box-shadow: var(--shadow-card);
+  }
+
+  .frosted-glass {
+    @apply bg-card/85 dark:bg-card/75 backdrop-blur-md border border-border;
+  }
+
+  .frosted-glass-card {
+    @apply bg-card/85 dark:bg-card/75 backdrop-blur-md border border-border rounded-2xl shadow-xl transition-all;
+  }
+
+  .text-gradient {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gold {
+    background: var(--gradient-gold-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .shiny-gold-header {
+    background: linear-gradient(
+      90deg,
+      #b45309 0%,
+      #f59e0b 25%,
+      #fef08a 50%,
+      #f59e0b 75%,
+      #b45309 100%
+    );
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: goldShimmer 4s linear infinite;
+  }
+
+  .light .shiny-gold-header, html.light .shiny-gold-header {
+    background: linear-gradient(
+      90deg,
+      #92400e 0%,
+      #b45309 25%,
+      #78350f 50%,
+      #d97706 75%,
+      #92400e 100%
+    );
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gold-shimmer {
+    background: linear-gradient(
+      110deg,
+      hsl(var(--gold) / 0) 0%,
+      hsl(var(--gold-light) / 0.4) 40%,
+      hsl(var(--gold-light) / 0.7) 50%,
+      hsl(var(--gold-light) / 0.4) 60%,
+      hsl(var(--gold) / 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  .border-gold {
+    border-color: hsl(var(--gold) / 0.45);
+  }
+
+  .glow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+
+  .glow-primary {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .btn-gradient {
+    background: var(--gradient-cta);
+    box-shadow: var(--shadow-button);
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+}
+
+@keyframes goldShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@layer utilities {
+  .bg-glass-border {
+    background-color: hsl(var(--glass-border));
+  }
+  
+  .border-glass-border {
+    border-color: hsl(var(--glass-border));
+  }
+}

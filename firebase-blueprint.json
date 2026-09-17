@@ -1,0 +1,184 @@
+{
+  "entities": {
+    "Site": {
+      "title": "Site",
+      "description": "A website project",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "design_summary": { "type": "string" },
+        "status": { "type": "string" },
+        "name": { "type": "string" }
+      },
+      "required": ["user_id", "design_summary", "status"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string" },
+        "hasMailAccess": { "type": "boolean" }
+      },
+      "required": ["email", "role"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "Mailing list contact",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" },
+        "user_id": { "type": "string" },
+        "site_id": { "type": "string" }
+      },
+      "required": ["email", "user_id", "site_id"]
+    },
+    "Email": {
+      "title": "Email",
+      "description": "Sent email log",
+      "type": "object",
+      "properties": {
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "recipient": { "type": "string" },
+        "user_id": { "type": "string" },
+        "site_id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["subject", "body", "recipient", "user_id", "site_id"]
+    },
+    "CloudConnection": {
+      "title": "CloudConnection",
+      "description": "Linked Google Drive or Dropbox account",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "provider": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "accessToken": { "type": "string" },
+        "refreshToken": { "type": "string" },
+        "connectedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "provider", "email", "connectedAt"]
+    },
+    "SyncConfig": {
+      "title": "SyncConfig",
+      "description": "Directory sync configuration",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "provider": { "type": "string" },
+        "folderId": { "type": "string" },
+        "folderName": { "type": "string" },
+        "lastSynced": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "provider", "folderId", "folderName"]
+    },
+    "EPK": {
+      "title": "EPK",
+      "description": "Electronic Press Kit",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "bandName": { "type": "string" },
+        "bio": { "type": "string" },
+        "mediaUrls": { "type": "array", "items": { "type": "string" } },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "bandName"]
+    },
+    "InboxMessage": {
+      "title": "InboxMessage",
+      "description": "Band contact message",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "senderEmail": { "type": "string", "format": "email" },
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "senderEmail", "subject", "body"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Store digital or physical product configured with Stripe",
+      "type": "object",
+      "properties": {
+        "stripeProductId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "tax_code": { "type": "string" },
+        "priceId": { "type": "string" },
+        "unit_amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "user_id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["stripeProductId", "name", "tax_code"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Stripe checkout completed payment record",
+      "type": "object",
+      "properties": {
+        "stripeSessionId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerEmail": { "type": "string", "format": "email" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string" },
+        "paymentStatus": { "type": "string" },
+        "productId": { "type": "string" },
+        "user_id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["stripeSessionId", "amount", "currency", "status"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Digital products with tax codes"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Completed customer orders and payments"
+    },
+    "/sites/{siteId}": {
+      "schema": "Site",
+      "description": "User websites"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/contacts/{contactId}": {
+      "schema": "Contact",
+      "description": "Mailing list contacts"
+    },
+    "/emails/{emailId}": {
+      "schema": "Email",
+      "description": "Sent email log"
+    },
+    "/cloud_connections/{connectionId}": {
+      "schema": "CloudConnection",
+      "description": "Linked cloud accounts"
+    },
+    "/epks/{epkId}": {
+      "schema": "EPK",
+      "description": "Musician EPKs"
+    },
+    "/inbox_messages/{messageId}": {
+      "schema": "InboxMessage",
+      "description": "Booking and contact messages"
+    },
+    "/sync_configs/{syncId}": {
+      "schema": "SyncConfig",
+      "description": "Directory sync configurations"
+    }
+  }
+}
+
