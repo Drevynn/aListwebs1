@@ -104,71 +104,72 @@ html {
     --background: 352 65% 97%; /* #fff1f3 Delicate rose velvet red canvas */
     --foreground: 350 80% 12%; /* #2b030b Deep Wine Noir text */
 
-    --card: 0 0% 100%; /* #ffffff pristine white cards */
-    --card-foreground: 350 80% 12%;
+    /* Cards in light theme: Burgundy background with radiant Gold font */
+    --card: 345 78% 22%; /* #640d23 Rich Imperial Burgundy card surface */
+    --card-foreground: 43 96% 56%; /* #f7a81b Radiant Hollywood Gold font */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 350 80% 12%;
+    --popover: 345 78% 22%;
+    --popover-foreground: 43 96% 56%;
 
-    --primary: 38 92% 44%; /* #d97706 Deep Royal Gold */
-    --primary-foreground: 0 0% 100%;
+    --primary: 43 96% 54%; /* #f59e0b Radiant Hollywood Gold */
+    --primary-foreground: 350 85% 10%;
 
-    --secondary: 350 45% 92%; /* #fce7eb */
-    --secondary-foreground: 350 80% 12%;
+    --secondary: 345 65% 20%; /* #541122 Rich Burgundy */
+    --secondary-foreground: 45 70% 92%;
 
-    --muted: 350 40% 92%;
-    --muted-foreground: 350 40% 30%; /* High contrast wine body */
+    --muted: 345 55% 18%;
+    --muted-foreground: 45 65% 82%; /* Luminous warm champagne gold */
 
-    --accent: 345 75% 28%; /* Burgundy */
-    --accent-foreground: 45 95% 95%;
+    --accent: 345 78% 26%; /* Imperial Burgundy Accent */
+    --accent-foreground: 43 96% 75%; /* Warm Gold */
 
     --destructive: 0 84.2% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 350 35% 82%; /* #eec8cf */
-    --input: 350 35% 82%;
-    --ring: 38 92% 44%;
+    --border: 345 45% 32%; /* #68172c Burgundy border */
+    --input: 345 45% 26%;
+    --ring: 43 96% 54%;
 
     /* Custom tokens */
-    --glow-primary: 38 92% 44% / 0.20;
-    --glow-accent: 345 75% 28% / 0.20;
-    --glass: 0 0% 100% / 0.92;
-    --glass-border: 350 35% 82%;
+    --glow-primary: 43 96% 54% / 0.30;
+    --glow-accent: 345 75% 28% / 0.30;
+    --glass: 345 78% 22% / 0.94;
+    --glass-border: 43 96% 54% / 0.30;
 
-    --burgundy: 345 78% 28%;
-    --burgundy-light: 345 65% 40%;
-    --burgundy-dark: 345 85% 15%;
+    --burgundy: 345 78% 26%;
+    --burgundy-light: 345 68% 38%;
+    --burgundy-dark: 345 85% 14%;
 
-    --gold: 38 92% 44%;
-    --gold-light: 43 96% 54%;
-    --gold-dark: 34 85% 32%;
+    --gold: 43 96% 54%;
+    --gold-light: 48 100% 68%;
+    --gold-dark: 38 92% 40%;
 
     /* Red Wallpaper Gradients */
     --gradient-hero: radial-gradient(circle at 15% 15%, rgba(254, 205, 211, 0.75) 0%, transparent 45%),
                      radial-gradient(circle at 85% 20%, rgba(254, 226, 226, 0.80) 0%, transparent 40%),
                      radial-gradient(circle at 50% 85%, rgba(254, 202, 202, 0.65) 0%, transparent 50%),
                      #fff1f2;
-    --gradient-card: linear-gradient(145deg, #ffffff 0%, #fff5f6 100%);
-    --gradient-cta: linear-gradient(135deg, #751028 0%, #991b3b 50%, #b45309 100%);
+    --gradient-card: linear-gradient(145deg, #6c1027 0%, #4c0716 100%);
+    --gradient-cta: linear-gradient(135deg, #751028 0%, #991b3b 50%, #d97706 100%);
     --gradient-accent: linear-gradient(135deg, #751028 0%, #991b3b 50%, #d97706 100%);
-    --gradient-text: linear-gradient(135deg, #420513 0%, #751028 50%, #b45309 100%);
+    --gradient-text: linear-gradient(135deg, #b45309 0%, #f59e0b 50%, #fef08a 100%);
     --gradient-gold: linear-gradient(135deg, #b45309 0%, #d97706 40%, #f59e0b 60%, #b45309 100%);
-    --gradient-gold-text: linear-gradient(135deg, #92400e 0%, #b45309 50%, #78350f 100%);
+    --gradient-gold-text: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #d97706 100%);
 
     /* Shadows */
-    --shadow-glow: 0 0 60px -12px rgba(180, 83, 9, 0.25);
-    --shadow-card: 0 10px 30px -10px rgba(66, 5, 19, 0.08), 0 1px 3px 0 rgba(66, 5, 19, 0.05);
-    --shadow-button: 0 10px 25px -10px rgba(117, 16, 40, 0.35);
-    --shadow-gold: 0 0 30px -8px rgba(217, 119, 6, 0.40);
+    --shadow-glow: 0 0 60px -12px rgba(245, 158, 11, 0.35);
+    --shadow-card: 0 14px 35px -10px rgba(70, 6, 21, 0.45), 0 4px 12px 0 rgba(70, 6, 21, 0.25);
+    --shadow-button: 0 10px 25px -10px rgba(117, 16, 40, 0.50);
+    --shadow-gold: 0 0 30px -8px rgba(245, 158, 11, 0.45);
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 350 80% 12%;
-    --sidebar-primary: 38 92% 44%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 350 45% 92%;
-    --sidebar-accent-foreground: 350 80% 12%;
-    --sidebar-border: 350 35% 82%;
-    --sidebar-ring: 38 92% 44%;
+    --sidebar-background: 345 78% 18%;
+    --sidebar-foreground: 43 96% 56%;
+    --sidebar-primary: 43 96% 54%;
+    --sidebar-primary-foreground: 350 85% 10%;
+    --sidebar-accent: 345 65% 26%;
+    --sidebar-accent-foreground: 43 96% 75%;
+    --sidebar-border: 345 45% 30%;
+    --sidebar-ring: 43 96% 54%;
   }
 }
 
@@ -201,6 +202,87 @@ html {
 
   .frosted-glass-card {
     @apply bg-card/85 dark:bg-card/75 backdrop-blur-md border border-border rounded-2xl shadow-xl transition-all;
+  }
+
+  /* Explicit light theme card styling: Imperial Burgundy surface with Radiant Gold font */
+  .light .bg-card,
+  html.light .bg-card,
+  .light [class*="bg-card"],
+  html.light [class*="bg-card"],
+  .light .glass-card,
+  html.light .glass-card,
+  .light .frosted-glass-card,
+  html.light .frosted-glass-card {
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    border-color: hsl(345 50% 32% / 0.85);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Gold typography hierarchy for light mode cards */
+  .light .bg-card h1,
+  .light .bg-card h2,
+  .light .bg-card h3,
+  .light .bg-card h4,
+  .light .bg-card h5,
+  .light .bg-card h6,
+  html.light .bg-card h1,
+  html.light .bg-card h2,
+  html.light .bg-card h3,
+  html.light .bg-card h4,
+  html.light .bg-card h5,
+  html.light .bg-card h6,
+  .light [class*="bg-card"] h1,
+  .light [class*="bg-card"] h2,
+  .light [class*="bg-card"] h3,
+  .light [class*="bg-card"] h4,
+  .light [class*="bg-card"] h5,
+  .light [class*="bg-card"] h6,
+  html.light [class*="bg-card"] h1,
+  html.light [class*="bg-card"] h2,
+  html.light [class*="bg-card"] h3,
+  html.light [class*="bg-card"] h4,
+  html.light [class*="bg-card"] h5,
+  html.light [class*="bg-card"] h6,
+  .light .glass-card h1,
+  .light .glass-card h2,
+  .light .glass-card h3,
+  .light .glass-card h4,
+  .light .glass-card h5,
+  .light .glass-card h6,
+  html.light .glass-card h1,
+  html.light .glass-card h2,
+  html.light .glass-card h3,
+  html.light .glass-card h4,
+  html.light .glass-card h5,
+  html.light .glass-card h6 {
+    color: hsl(var(--card-foreground)) !important;
+  }
+
+  /* Body and descriptions in light mode cards: warm champagne gold for optimal contrast */
+  .light .bg-card p,
+  html.light .bg-card p,
+  .light [class*="bg-card"] p,
+  html.light [class*="bg-card"] p,
+  .light .glass-card p,
+  html.light .glass-card p,
+  .light .bg-card .text-muted-foreground,
+  html.light .bg-card .text-muted-foreground,
+  .light [class*="bg-card"] .text-muted-foreground,
+  html.light [class*="bg-card"] .text-muted-foreground,
+  .light .glass-card .text-muted-foreground,
+  html.light .glass-card .text-muted-foreground {
+    color: hsl(45 80% 84%);
+  }
+
+  /* Subheadings / spans / lists inside light theme cards */
+  .light .bg-card .text-foreground,
+  html.light .bg-card .text-foreground,
+  .light [class*="bg-card"] .text-foreground,
+  html.light [class*="bg-card"] .text-foreground,
+  .light .glass-card .text-foreground,
+  html.light .glass-card .text-foreground {
+    color: hsl(var(--card-foreground));
   }
 
   .text-gradient {
@@ -236,11 +318,11 @@ html {
   .light .shiny-gold-header, html.light .shiny-gold-header {
     background: linear-gradient(
       90deg,
-      #92400e 0%,
-      #b45309 25%,
-      #78350f 50%,
-      #d97706 75%,
-      #92400e 100%
+      #b45309 0%,
+      #f59e0b 25%,
+      #fef08a 50%,
+      #f59e0b 75%,
+      #b45309 100%
     );
     background-size: 250% auto;
     -webkit-background-clip: text;

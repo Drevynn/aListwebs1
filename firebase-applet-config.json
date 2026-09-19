@@ -3,6 +3,7 @@
   "appId": "1:1052247576198:web:2d9e2b91e9d21fc9c78b07",
   "apiKey": "AIzaSyB9clpbXCcXp9op_4W4FLqsqO7xVsCNRTA",
   "authDomain": "alistwebs.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-alistwebs-c3b518e3-9304-4388-be6f-1e1cf20eb7b5",
   "storageBucket": "alistwebs.firebasestorage.app",
   "messagingSenderId": "1052247576198",
   "measurementId": "",
