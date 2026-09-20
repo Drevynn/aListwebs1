@@ -33,7 +33,11 @@ export async function getStripeConfig(): Promise<StripeConfig> {
   }
 }
 
-export async function startCheckoutSession(tier: string, customerEmail?: string): Promise<{ url?: string; error?: string; needsKey?: boolean }> {
+export async function startCheckoutSession(
+  tier: string,
+  customerEmail?: string,
+  domainUpsell?: { domain: string; priceUsd?: number }
+): Promise<{ url?: string; error?: string; needsKey?: boolean }> {
   try {
     const res = await fetch("/api/stripe/create-checkout-session", {
       method: "POST",
@@ -43,6 +47,7 @@ export async function startCheckoutSession(tier: string, customerEmail?: string)
         customerEmail,
         successUrl: `${window.location.origin}/dashboard?session_id={CHECKOUT_SESSION_ID}&checkout_success=true`,
         cancelUrl: `${window.location.origin}/#pricing`,
+        domainUpsell,
       }),
     });
 

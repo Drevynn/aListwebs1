@@ -1,67 +1,107 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Sparkles, Shield, Loader2, CreditCard } from "lucide-react";
+import { Check, Sparkles, Shield, Loader2, CreditCard, Globe, Search, PlusCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 export default function Pricing() {
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const [domainQuery, setDomainQuery] = useState("");
+  const [searchingDomain, setSearchingDomain] = useState(false);
+  const [domainResult, setDomainResult] = useState<{
+    domain: string;
+    isAvailable: boolean;
+    upsellPriceUsd: number;
+    wholesalePriceUsd: number;
+    suggestions: Array<{ domain: string; tld: string; upsellPriceUsd: number }>;
+  } | null>(null);
+  const [includeDomainUpsell, setIncludeDomainUpsell] = useState(false);
+  const [selectedDomain, setSelectedDomain] = useState("artistname.com");
+  const [selectedDomainPrice, setSelectedDomainPrice] = useState(12.00);
+
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const handleSearchDomain = async (queryToSearch?: string) => {
+    const q = (queryToSearch || domainQuery).trim();
+    if (!q) return;
+    setSearchingDomain(true);
+    try {
+      const res = await fetch(`/api/registrar/search?domain=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      if (data.success) {
+        setDomainResult(data);
+        setSelectedDomain(data.domain);
+        setSelectedDomainPrice(data.upsellPriceUsd || 12.00);
+        setIncludeDomainUpsell(true);
+      }
+    } catch {
+      toast({
+        title: "Domain Search Failed",
+        description: "Could not query registrar at this moment. You can still bundle a domain.",
+        variant: "destructive",
+      });
+    } finally {
+      setSearchingDomain(false);
+    }
+  };
+
   const tiers = [
-    {
-      id: "starter",
-      name: "Starter (Weekly)",
-      price: "$7.77",
-      period: "/week",
-      description: "Our starting plan. Flexible weekly billing for indie creators and artists getting started. Safely covers Google Cloud container & database infrastructure costs.",
-      features: [
-        "1 published creative headquarters + Custom Domain",
-        "Schema-first component & EPK builder",
-        "Embedded audio & 4K video streaming",
-        "Direct fan & mailing list capture",
-        "Guaranteed Google Cloud infrastructure coverage",
-      ],
-      cta: "Start with Weekly ($7.77)",
-      variant: "heroOutline" as const,
-      highlighted: false,
-    },
     {
       id: "monthly",
       name: "Monthly Creator",
       price: "$47.00",
       period: "/month",
-      description: "The ultimate professional tier for working musicians, filmmakers, actors, and writers with robust profit margin over Google Cloud APIs.",
+      description: "Full digital headquarters suite. Flexible month-to-month billing for musicians, filmmakers, actors, and writers.",
       features: [
-        "Up to 3 Active Creative HQs / Aliases",
+        "1-3 Active Creative HQs & Aliases",
         "Full EPK, Casting Kit & Pitch Deck builder",
         "Password-protected screeners, riders & manuscripts",
-        "Lossless FLAC audio & 4K video reel hosting",
-        "Multiple custom domains & vanity URLs",
+        "Lossless audio & 4K video reel hosting",
+        "Custom domain routing + Free SSL/DNSSEC",
         "Downloadable 300DPI press & headshot bundles",
-        "Priority Cloud Run build worker queue",
+        "Direct fan & mailing list capture",
       ],
-      cta: "Get Monthly Creator ($47)",
+      cta: "Get Monthly ($47/mo)",
+      variant: "heroOutline" as const,
+      highlighted: false,
+    },
+    {
+      id: "biannual",
+      name: "Bi-Annual Pro",
+      price: "$234.00",
+      period: "/6 months",
+      description: "Billed every 6 months ($39.00/mo effective). Saves 17% compared to monthly. Ideal for active release schedules and tour cycles.",
+      features: [
+        "Up to 4 Creative HQs / Production Hubs",
+        "Everything in Monthly Creator",
+        "Save 17% compared to monthly billing",
+        "Priority Cloud Run worker rendering queue",
+        "Release countdown & VIP RSVP screening gates",
+        "Multi-domain alias management",
+        "Guaranteed continuous Google Cloud compute capacity",
+      ],
+      cta: "Get Bi-Annual ($234/6mo)",
       variant: "hero" as const,
       highlighted: true,
     },
     {
       id: "yearly",
-      name: "Yearly Sovereign",
+      name: "Annual Sovereign",
       price: "$397.00",
       period: "/year",
-      description: "Saves ~30% compared to monthly ($33.08/mo effective). Locks in guaranteed annual Google Cloud & AI token coverage upfront on day one.",
+      description: "Billed annually ($33.08/mo effective). Saves ~30% with guaranteed full-year Google Cloud & Gemini AI infrastructure coverage.",
       features: [
-        "Up to 5 Creative HQs on a unified dashboard",
-        "Everything in Monthly Creator",
-        "Team roles (Producer, Tour Manager, Agent, Editor)",
+        "Up to 6 Creative HQs on a unified dashboard",
+        "Everything in Bi-Annual Pro",
+        "Save 30% compared to monthly billing",
+        "Team collaboration (Producer, Tour Manager, Agent, Editor)",
         "Dedicated custom domains for every roster artist",
-        "Multi-creator release drop scheduling",
         "Direct founder chat & priority support",
+        "Priority Cloud Run render pipeline & VIP onboarding",
       ],
-      cta: "Go Yearly Sovereign ($397)",
+      cta: "Go Annual ($397/yr)",
       variant: "heroOutline" as const,
       highlighted: false,
     },
@@ -70,10 +110,24 @@ export default function Pricing() {
   const handleSelectTier = async (tier: typeof tiers[0]) => {
     setLoadingTier(tier.id);
     try {
+      const payload: Record<string, unknown> = {
+        priceId: tier.id,
+        tier: tier.id,
+        successUrl: window.location.origin + "/build",
+        cancelUrl: window.location.href,
+      };
+
+      if (includeDomainUpsell && selectedDomain) {
+        payload.domainUpsell = {
+          domain: selectedDomain,
+          priceUsd: selectedDomainPrice,
+        };
+      }
+
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: tier.id, successUrl: window.location.origin + "/build", cancelUrl: window.location.href }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (data.url) {
@@ -119,6 +173,113 @@ export default function Pricing() {
             </span>
           </div>
         </div>
+
+        {/* Cloudflare Registrar Domain Registration Upsell Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-12 p-6 sm:p-8 rounded-3xl bg-card border-2 border-gold/40 shadow-xl shadow-gold/5 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-2 max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/15 text-gold text-xs font-mono font-semibold uppercase tracking-wider">
+                <Globe className="w-3.5 h-3.5" />
+                Upsell Add-On: Cloudflare Registrar Integration
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold font-display text-foreground tracking-tight">
+                Reserve Your Custom Apex Domain at Cost
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Connect your sovereign digital headquarters to a dedicated custom domain (e.g. <span className="text-gold font-mono">.com, .film, .studio, .live, .me</span>). Includes free automated WHOIS privacy, DNSSEC protection, and Edge CDN routing.
+              </p>
+            </div>
+
+            {/* Domain Search & Selection Form */}
+            <div className="w-full md:w-auto md:min-w-[340px] space-y-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={domainQuery}
+                    onChange={(e) => setDomainQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearchDomain()}
+                    placeholder="Search domain (e.g. yourname.com)"
+                    className="w-full pl-9 pr-3 py-2 text-xs font-mono rounded-xl bg-background border border-border focus:border-gold focus:outline-none text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  variant="hero"
+                  onClick={() => handleSearchDomain()}
+                  disabled={searchingDomain}
+                  className="shrink-0 text-xs px-4"
+                >
+                  {searchingDomain ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Check"}
+                </Button>
+              </div>
+
+              {/* Quick Extension Suggestions */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[11px] font-mono text-muted-foreground mr-1">Popular:</span>
+                {[
+                  { tld: "com", price: 12.00 },
+                  { tld: "film", price: 29.00 },
+                  { tld: "studio", price: 24.00 },
+                  { tld: "live", price: 16.00 },
+                  { tld: "me", price: 18.00 },
+                ].map((ext) => (
+                  <button
+                    key={ext.tld}
+                    type="button"
+                    onClick={() => {
+                      const base = domainQuery ? domainQuery.split(".")[0] : "artistname";
+                      const candidate = `${base}.${ext.tld}`;
+                      setDomainQuery(candidate);
+                      handleSearchDomain(candidate);
+                    }}
+                    className={`text-[11px] font-mono px-2 py-0.5 rounded-md border transition-all ${
+                      selectedDomain.endsWith(`.${ext.tld}`)
+                        ? "bg-gold text-white border-gold font-bold shadow-sm"
+                        : "bg-muted/60 text-muted-foreground border-border hover:border-gold/50 hover:text-foreground"
+                    }`}
+                  >
+                    .{ext.tld} (${ext.price}/yr)
+                  </button>
+                ))}
+              </div>
+
+              {/* Domain Selected Status & Toggle */}
+              {domainResult && (
+                <div className="p-3 rounded-xl bg-muted/40 border border-gold/30 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-gold shrink-0" />
+                    <div>
+                      <span className="font-mono font-semibold text-foreground">{domainResult.domain}</span>
+                      <span className="text-muted-foreground ml-2">
+                        (+${domainResult.upsellPriceUsd.toFixed(2)}/yr)
+                      </span>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={includeDomainUpsell}
+                      onChange={(e) => setIncludeDomainUpsell(e.target.checked)}
+                      className="w-4 h-4 rounded text-gold focus:ring-gold border-border cursor-pointer accent-[#D4AF37]"
+                    />
+                    <span className="font-mono text-[11px] font-medium text-gold">
+                      {includeDomainUpsell ? "Bundled ✓" : "Add to plan"}
+                    </span>
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch mb-12">
           {tiers.map((tier, idx) => (
@@ -186,6 +347,8 @@ export default function Pricing() {
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       Connecting to Stripe...
                     </>
+                  ) : includeDomainUpsell && selectedDomain ? (
+                    `${tier.cta} + Domain ($${selectedDomainPrice.toFixed(2)}/yr)`
                   ) : (
                     tier.cta
                   )}

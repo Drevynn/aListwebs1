@@ -35,11 +35,84 @@ const TARGET_IP = "185.158.133.1";
 
 const DomainWizard = () => {
   const [step, setStep] = useState<Step>(0);
+  const [domainMode, setDomainMode] = useState<"connect" | "register">("connect");
   const [domain, setDomain] = useState("");
   const [confirmedDomain, setConfirmedDomain] = useState("");
   const [verifyState, setVerifyState] = useState<VerifyState>("idle");
   const [sslState, setSslState] = useState<VerifyState>("idle");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // Registration mode states
+  const [isSearchingReg, setIsSearchingReg] = useState(false);
+  const [regResult, setRegResult] = useState<{
+    domain: string;
+    isAvailable: boolean;
+    upsellPriceUsd: number;
+    wholesalePriceUsd: number;
+  } | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  const handleSearchRegistrar = async (searchName?: string) => {
+    const q = (searchName || domain).trim();
+    if (!q) return;
+    setIsSearchingReg(true);
+    try {
+      const res = await fetch(`/api/registrar/search?domain=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      if (data.success) {
+        setRegResult(data);
+        setDomain(data.domain);
+      }
+    } catch {
+      toast({
+        title: "Search Error",
+        description: "Could not query registrar availability. Please retry.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearchingReg(false);
+    }
+  };
+
+  const handleRegisterDomain = async () => {
+    if (!regResult) return;
+    setIsRegistering(true);
+    try {
+      const res = await fetch("/api/registrar/registrations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          domain_name: regResult.domain,
+          years: 1,
+          privacy: true,
+          auto_renew: true,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setConfirmedDomain(regResult.domain);
+        toast({
+          title: "Domain Reserved!",
+          description: `${regResult.domain} has been registered via Cloudflare Registrar. Automatic DNS records created.`,
+        });
+        setStep(4); // Skip manual DNS setup straight to Live!
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: data.error || "Could not complete registration.",
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({
+        title: "Registration Error",
+        description: "An unexpected error occurred during domain provisioning.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegistering(false);
+    }
+  };
 
   const verifyToken = `lovable_verify=${(confirmedDomain || "yourdomain.com")
     .replace(/[^a-z0-9]/gi, "")
@@ -179,32 +252,162 @@ const DomainWizard = () => {
               transition={{ duration: 0.25 }}
             >
               {step === 0 && (
-                <div className="space-y-5">
-                  <div>
-                    <h3 className="font-display text-2xl font-semibold mb-2">
-                      Enter your domain
-                    </h3>
-                    <p className="text-muted-foreground text-sm">
-                      Use a domain you already own. We'll generate the DNS records you need.
-                    </p>
+                <div className="space-y-6">
+                  {/* Mode Toggle Tabs */}
+                  <div className="flex p-1 bg-secondary/80 rounded-xl border border-glass-border">
+                    <button
+                      type="button"
+                      onClick={() => setDomainMode("connect")}
+                      className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${
+                        domainMode === "connect"
+                          ? "bg-background text-foreground shadow-sm font-semibold"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      Connect Existing Domain
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDomainMode("register")}
+                      className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                        domainMode === "register"
+                          ? "bg-gold text-white shadow-sm font-semibold"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Register New Domain (at cost)
+                    </button>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="domain">Domain name</Label>
-                    <Input
-                      id="domain"
-                      placeholder="mysite.com"
-                      value={domain}
-                      onChange={(e) => setDomain(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleStartDomain()}
-                      className="bg-secondary border-glass-border h-12"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      No <code className="text-gold">http://</code> or paths — just the domain.
-                    </p>
-                  </div>
-                  <Button variant="hero" size="lg" onClick={handleStartDomain} className="w-full">
-                    Continue <ArrowRight className="w-4 h-4" />
-                  </Button>
+
+                  {domainMode === "connect" ? (
+                    <div className="space-y-5">
+                      <div>
+                        <h3 className="font-display text-2xl font-semibold mb-2">
+                          Enter your existing domain
+                        </h3>
+                        <p className="text-muted-foreground text-sm">
+                          Use a domain you already own (GoDaddy, Namecheap, Google, etc.). We'll generate the DNS records you need.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="domain">Domain name</Label>
+                        <Input
+                          id="domain"
+                          placeholder="mysite.com"
+                          value={domain}
+                          onChange={(e) => setDomain(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && handleStartDomain()}
+                          className="bg-secondary border-glass-border h-12"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          No <code className="text-gold">http://</code> or paths — just the apex domain.
+                        </p>
+                      </div>
+                      <Button variant="hero" size="lg" onClick={handleStartDomain} className="w-full">
+                        Continue to DNS Setup <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-5">
+                      <div>
+                        <h3 className="font-display text-2xl font-semibold mb-2 flex items-center gap-2">
+                          <Globe className="w-6 h-6 text-gold" />
+                          Register Domain via Cloudflare
+                        </h3>
+                        <p className="text-muted-foreground text-sm">
+                          Direct registration with wholesale pricing, zero markup, free WHOIS privacy, and automatic DNS routing.
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="reg-domain">Desired Domain</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="reg-domain"
+                            placeholder="e.g. thevalkyries.com"
+                            value={domain}
+                            onChange={(e) => setDomain(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleSearchRegistrar()}
+                            className="bg-secondary border-glass-border h-12"
+                          />
+                          <Button
+                            variant="hero"
+                            onClick={() => handleSearchRegistrar()}
+                            disabled={isSearchingReg}
+                            className="h-12 px-6 shrink-0"
+                          >
+                            {isSearchingReg ? <Loader2 className="w-4 h-4 animate-spin" /> : "Check"}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Extension Shortcuts */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <span className="text-xs font-mono text-muted-foreground mr-1">Popular:</span>
+                        {[
+                          { tld: "com", price: 12.00 },
+                          { tld: "film", price: 29.00 },
+                          { tld: "studio", price: 24.00 },
+                          { tld: "live", price: 16.00 },
+                          { tld: "me", price: 18.00 },
+                        ].map((ext) => (
+                          <button
+                            key={ext.tld}
+                            type="button"
+                            onClick={() => {
+                              const base = domain ? domain.split(".")[0] : "artistname";
+                              const cand = `${base}.${ext.tld}`;
+                              setDomain(cand);
+                              handleSearchRegistrar(cand);
+                            }}
+                            className="text-xs font-mono px-2.5 py-1 rounded-md bg-secondary border border-glass-border hover:border-gold/60 text-muted-foreground hover:text-foreground transition-all"
+                          >
+                            .{ext.tld} (${ext.price}/yr)
+                          </button>
+                        ))}
+                      </div>
+
+                      {regResult && (
+                        <div className="p-4 rounded-xl bg-secondary/50 border border-gold/40 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="w-5 h-5 text-gold" />
+                              <span className="font-mono text-base font-semibold text-foreground">
+                                {regResult.domain}
+                              </span>
+                            </div>
+                            <span className="font-mono text-sm font-bold text-gold px-2.5 py-1 rounded bg-gold/10">
+                              ${regResult.wholesalePriceUsd.toFixed(2)}/year
+                            </span>
+                          </div>
+
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <p>✓ Free WHOIS Privacy Guard included</p>
+                            <p>✓ Automatic Cloudflare DNSSEC & SSL configuration</p>
+                            <p>✓ Zero-downtime edge CDN integration</p>
+                          </div>
+
+                          <Button
+                            variant="hero"
+                            size="lg"
+                            onClick={handleRegisterDomain}
+                            disabled={isRegistering}
+                            className="w-full mt-2"
+                          >
+                            {isRegistering ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                Provisioning Registration...
+                              </>
+                            ) : (
+                              `Register & Connect ${regResult.domain}`
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 

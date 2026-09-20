@@ -14,6 +14,18 @@ import {
   recordCompletedSession,
   recordedCompletedSessions,
 } from "./server/stripe";
+import { createCheckoutSessionHandler } from "./lib/stripe";
+import {
+  listRegistrarExtensions,
+  getRegistrarExtension,
+  checkDomainAvailability,
+  createRegistrarRegistration,
+  listRegistrarRegistrations,
+  getRegistrarRegistration,
+  updateRegistrarRegistration,
+  getRegistrarRegistrationStatus,
+  getRegistrarUpdateStatus,
+} from "./server/registrar";
 import { getStorageOverview } from "./server/storage";
 import {
   HOLLYWOOD_GENIUS_SYSTEM_PROMPT,
@@ -103,7 +115,7 @@ async function startServer() {
     });
   });
 
-  app.post("/api/stripe/create-checkout-session", async (req, res) => {
+  const handleCheckoutSession = async (req: express.Request, res: express.Response) => {
     try {
       if (!isStripeConfigured()) {
         res.status(400).json({
@@ -114,13 +126,18 @@ async function startServer() {
         });
         return;
       }
-      const { tier, customerEmail, successUrl, cancelUrl } = req.body;
+      const { tier, priceId, customerEmail, successUrl, cancelUrl, domainUpsell } = req.body;
       const origin = req.headers.origin || `http://localhost:${PORT}`;
       const session = await createSubscriptionCheckoutSession({
-        tier: tier || "starter",
+        tier: tier || priceId || "starter",
+        priceId: priceId?.startsWith("price_") ? priceId : undefined,
         customerEmail,
         successUrl: successUrl || `${origin}/dashboard?session_id={CHECKOUT_SESSION_ID}&checkout_success=true`,
         cancelUrl: cancelUrl || `${origin}/#pricing`,
+        domainUpsell: domainUpsell && domainUpsell.domain ? {
+          domain: domainUpsell.domain,
+          priceUsd: domainUpsell.priceUsd ? Number(domainUpsell.priceUsd) : 12.0,
+        } : undefined,
       });
       res.json({ url: session.url, sessionId: session.id });
     } catch (err: unknown) {
@@ -128,7 +145,11 @@ async function startServer() {
       const msg = err instanceof Error ? err.message : "Failed to create checkout session";
       res.status(500).json({ error: msg });
     }
-  });
+  };
+
+  app.post("/api/stripe/create-checkout-session", handleCheckoutSession);
+  app.post("/api/create-checkout-session", handleCheckoutSession);
+  app.post("/api/stripe/checkout-session", createCheckoutSessionHandler);
 
   app.post("/api/stripe/create-portal-session", async (req, res) => {
     try {
@@ -300,6 +321,160 @@ async function startServer() {
       res.status(400).send(`Webhook Error: ${msg}`);
     }
   });
+
+  // ==========================================
+  // Cloudflare Registrar API Endpoints
+  // ==========================================
+
+  // Extension List & Details
+  const handleListExtensions = async (req: express.Request, res: express.Response) => {
+    try {
+      const accountId = req.params.account_id;
+      const data = await listRegistrarExtensions(accountId);
+      res.json(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to list extensions";
+      res.status(500).json({ success: false, error: msg });
+    }
+  };
+
+  const handleGetExtension = async (req: express.Request, res: express.Response) => {
+    try {
+      const accountId = req.params.account_id;
+      const ext = req.params.extension;
+      const data = await getRegistrarExtension(ext, accountId);
+      res.json(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to get extension";
+      res.status(500).json({ success: false, error: msg });
+    }
+  };
+
+  app.get("/api/registrar/extensions", handleListExtensions);
+  app.get("/api/accounts/:account_id/registrar/extensions", handleListExtensions);
+
+  app.get("/api/registrar/extensions/:extension", handleGetExtension);
+  app.get("/api/accounts/:account_id/registrar/extensions/:extension", handleGetExtension);
+
+  // Live Domain Search & Upsell Pricing
+  app.get("/api/registrar/search", async (req, res) => {
+    try {
+      const domainQuery = (req.query.domain as string) || "";
+      if (!domainQuery) {
+        res.status(400).json({ error: "domain query parameter is required" });
+        return;
+      }
+      const data = await checkDomainAvailability(domainQuery);
+      res.json({ success: true, ...data });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Domain search failed";
+      res.status(500).json({ success: false, error: msg });
+    }
+  });
+
+  // Registrations: List & Create
+  const handleListRegistrations = async (req: express.Request, res: express.Response) => {
+    try {
+      const accountId = req.params.account_id;
+      const data = await listRegistrarRegistrations(accountId);
+      res.json(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to list registrations";
+      res.status(500).json({ success: false, error: msg });
+    }
+  };
+
+  const handleCreateRegistration = async (req: express.Request, res: express.Response) => {
+    try {
+      const accountId = req.params.account_id;
+      const { domain_name, years, privacy, auto_renew, contact_email, stripe_session_id } = req.body;
+      if (!domain_name) {
+        res.status(400).json({ success: false, error: "domain_name is required" });
+        return;
+      }
+      const result = await createRegistrarRegistration({
+        domain_name,
+        years,
+        privacy,
+        auto_renew,
+        contact_email,
+        stripe_session_id,
+        accountIdOverride: accountId,
+      });
+      res.json(result);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to create registration";
+      res.status(500).json({ success: false, error: msg });
+    }
+  };
+
+  app.get("/api/registrar/registrations", handleListRegistrations);
+  app.get("/api/accounts/:account_id/registrar/registrations", handleListRegistrations);
+
+  app.post("/api/registrar/registrations", handleCreateRegistration);
+  app.post("/api/accounts/:account_id/registrar/registrations", handleCreateRegistration);
+
+  // Single Registration: Get & Update (PATCH)
+  const handleGetRegistration = async (req: express.Request, res: express.Response) => {
+    try {
+      const accountId = req.params.account_id;
+      const domainName = req.params.domain_name || req.params.domain;
+      const result = await getRegistrarRegistration(domainName, accountId);
+      res.json(result);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to get registration";
+      res.status(500).json({ success: false, error: msg });
+    }
+  };
+
+  const handleUpdateRegistration = async (req: express.Request, res: express.Response) => {
+    try {
+      const accountId = req.params.account_id;
+      const domainName = req.params.domain_name || req.params.domain;
+      const result = await updateRegistrarRegistration(domainName, req.body, accountId);
+      res.json(result);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to update registration";
+      res.status(500).json({ success: false, error: msg });
+    }
+  };
+
+  app.get("/api/registrar/registrations/:domain_name", handleGetRegistration);
+  app.get("/api/accounts/:account_id/registrar/registrations/:domain_name", handleGetRegistration);
+
+  app.patch("/api/registrar/registrations/:domain_name", handleUpdateRegistration);
+  app.patch("/api/accounts/:account_id/registrar/registrations/:domain_name", handleUpdateRegistration);
+
+  // Registration Status & Update Status
+  const handleGetRegistrationStatus = async (req: express.Request, res: express.Response) => {
+    try {
+      const accountId = req.params.account_id;
+      const domainName = req.params.domain_name || req.params.domain;
+      const result = await getRegistrarRegistrationStatus(domainName, accountId);
+      res.json(result);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to get registration status";
+      res.status(500).json({ success: false, error: msg });
+    }
+  };
+
+  const handleGetUpdateStatus = async (req: express.Request, res: express.Response) => {
+    try {
+      const accountId = req.params.account_id;
+      const domainName = req.params.domain_name || req.params.domain;
+      const result = await getRegistrarUpdateStatus(domainName, accountId);
+      res.json(result);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to get update status";
+      res.status(500).json({ success: false, error: msg });
+    }
+  };
+
+  app.get("/api/registrar/registrations/:domain_name/registration-status", handleGetRegistrationStatus);
+  app.get("/api/accounts/:account_id/registrar/registrations/:domain_name/registration-status", handleGetRegistrationStatus);
+
+  app.get("/api/registrar/registrations/:domain_name/update-status", handleGetUpdateStatus);
+  app.get("/api/accounts/:account_id/registrar/registrations/:domain_name/update-status", handleGetUpdateStatus);
 
   // API route for streaming design chat
   app.post("/api/design-chat", async (req, res) => {

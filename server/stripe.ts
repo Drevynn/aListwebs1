@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { createRegistrarRegistration } from "./registrar";
 
 let stripeClient: Stripe | null = null;
 
@@ -46,65 +47,82 @@ export interface PlanConfig {
   name: string;
   amountCents: number;
   currency: string;
-  interval: "week" | "month" | "year";
+  interval: "month" | "year";
+  intervalCount?: number;
   priceIdEnvVar?: string;
   description: string;
 }
 
 export const PLANS: Record<string, PlanConfig> = {
-  starter: {
-    id: "starter",
-    name: "AlistWebs Weekly Starter",
-    amountCents: 777,
-    currency: "usd",
-    interval: "week",
-    priceIdEnvVar: "STRIPE_STARTER_PRICE_ID",
-    description: "Weekly flexible billing. Unlimited creator sites, custom domains, and AI builder.",
-  },
-  weekly: {
-    id: "starter",
-    name: "AlistWebs Weekly Starter",
-    amountCents: 777,
-    currency: "usd",
-    interval: "week",
-    priceIdEnvVar: "STRIPE_STARTER_PRICE_ID",
-    description: "Weekly flexible billing. Unlimited creator sites, custom domains, and AI builder.",
-  },
   monthly: {
     id: "monthly",
     name: "AlistWebs Monthly Creator",
     amountCents: 4700,
     currency: "usd",
     interval: "month",
+    intervalCount: 1,
     priceIdEnvVar: "STRIPE_MONTHLY_PRICE_ID",
-    description: "Full monthly creator suite with custom domains, lossless audio, and priority queue.",
+    description: "Full monthly creator suite with custom domains, lossless audio, showreels, and priority queue.",
   },
-  yearly: {
-    id: "yearly",
-    name: "AlistWebs Yearly Sovereign",
-    amountCents: 39700,
-    currency: "usd",
-    interval: "year",
-    priceIdEnvVar: "STRIPE_YEARLY_PRICE_ID",
-    description: "Annual sovereign billing with ~30% savings and guaranteed full Google Cloud infrastructure coverage.",
-  },
-  professional: {
+  starter: {
     id: "monthly",
     name: "AlistWebs Monthly Creator",
     amountCents: 4700,
     currency: "usd",
     interval: "month",
+    intervalCount: 1,
     priceIdEnvVar: "STRIPE_MONTHLY_PRICE_ID",
-    description: "Full monthly creator suite with custom domains, lossless audio, and priority queue.",
+    description: "Full monthly creator suite with custom domains, lossless audio, showreels, and priority queue.",
   },
-  agency: {
+  biannual: {
+    id: "biannual",
+    name: "AlistWebs Bi-Annual Pro",
+    amountCents: 23400,
+    currency: "usd",
+    interval: "month",
+    intervalCount: 6,
+    priceIdEnvVar: "STRIPE_BIANNUAL_PRICE_ID",
+    description: "Billed every 6 months. Save 17% compared to monthly. Ideal for active release cycles and production teams.",
+  },
+  biannually: {
+    id: "biannual",
+    name: "AlistWebs Bi-Annual Pro",
+    amountCents: 23400,
+    currency: "usd",
+    interval: "month",
+    intervalCount: 6,
+    priceIdEnvVar: "STRIPE_BIANNUAL_PRICE_ID",
+    description: "Billed every 6 months. Save 17% compared to monthly. Ideal for active release cycles and production teams.",
+  },
+  yearly: {
     id: "yearly",
-    name: "AlistWebs Yearly Sovereign",
+    name: "AlistWebs Annual Sovereign",
     amountCents: 39700,
     currency: "usd",
     interval: "year",
+    intervalCount: 1,
     priceIdEnvVar: "STRIPE_YEARLY_PRICE_ID",
-    description: "Annual sovereign billing with ~30% savings and guaranteed full Google Cloud infrastructure coverage.",
+    description: "Annual sovereign billing with 30% savings (~$33.08/mo) and guaranteed full Google Cloud infrastructure coverage.",
+  },
+  annual: {
+    id: "yearly",
+    name: "AlistWebs Annual Sovereign",
+    amountCents: 39700,
+    currency: "usd",
+    interval: "year",
+    intervalCount: 1,
+    priceIdEnvVar: "STRIPE_YEARLY_PRICE_ID",
+    description: "Annual sovereign billing with 30% savings (~$33.08/mo) and guaranteed full Google Cloud infrastructure coverage.",
+  },
+  annually: {
+    id: "yearly",
+    name: "AlistWebs Annual Sovereign",
+    amountCents: 39700,
+    currency: "usd",
+    interval: "year",
+    intervalCount: 1,
+    priceIdEnvVar: "STRIPE_YEARLY_PRICE_ID",
+    description: "Annual sovereign billing with 30% savings (~$33.08/mo) and guaranteed full Google Cloud infrastructure coverage.",
   },
 };
 
@@ -271,6 +289,22 @@ export function recordCompletedSession(session: Stripe.Checkout.Session): Checko
     recordedCompletedSessions.pop();
   }
 
+  // If a domain upsell was part of this completed checkout, trigger domain registration record
+  if (session.metadata?.domain_upsell) {
+    const domainName = session.metadata.domain_upsell;
+    const email = session.customer_details?.email || session.customer_email || undefined;
+    createRegistrarRegistration({
+      domain_name: domainName,
+      contact_email: email,
+      stripe_session_id: session.id,
+      privacy: true,
+      auto_renew: true,
+      years: 1,
+    }).catch((err) => {
+      console.warn("Failed to automatically record registrar registration upon checkout completion:", err);
+    });
+  }
+
   return record;
 }
 
@@ -298,18 +332,25 @@ export async function getOrCreateCustomer(email: string, name?: string): Promise
 }
 
 /**
- * Creates a Stripe Checkout Session for subscription billing
+ * Creates a Stripe Checkout Session for subscription billing with optional Domain Registration Upsell
  */
 export async function createSubscriptionCheckoutSession({
   tier,
+  priceId,
   customerEmail,
   successUrl,
   cancelUrl,
+  domainUpsell,
 }: {
   tier: string;
+  priceId?: string;
   customerEmail?: string;
   successUrl: string;
   cancelUrl: string;
+  domainUpsell?: {
+    domain: string;
+    priceUsd?: number;
+  };
 }): Promise<Stripe.Checkout.Session> {
   const stripe = getStripe();
   const normalizedTier = tier.toLowerCase();
@@ -321,37 +362,68 @@ export async function createSubscriptionCheckoutSession({
     customerId = customer.id;
   }
 
-  // Check if an explicit Stripe Price ID is configured in env
-  const envPriceId = plan.priceIdEnvVar ? process.env[plan.priceIdEnvVar] : undefined;
+  // Check if an explicit Stripe Price ID is configured in env or provided directly
+  const explicitPriceId = priceId || (plan.priceIdEnvVar ? process.env[plan.priceIdEnvVar] : undefined);
 
-  const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = envPriceId
-    ? {
-        price: envPriceId,
-        quantity: 1,
-      }
-    : {
-        price_data: {
-          currency: plan.currency,
-          product_data: {
-            name: plan.name,
-            description: plan.description,
-            metadata: {
-              tier: plan.id,
-              platform: "alistwebs",
-            },
-          },
-          unit_amount: plan.amountCents,
-          recurring: {
-            interval: plan.interval,
+  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+
+  if (explicitPriceId) {
+    lineItems.push({
+      price: explicitPriceId,
+      quantity: 1,
+    });
+  } else {
+    lineItems.push({
+      price_data: {
+        currency: plan.currency,
+        product_data: {
+          name: plan.name,
+          description: plan.description,
+          metadata: {
+            tier: plan.id,
+            platform: "alistwebs",
           },
         },
-        quantity: 1,
-      };
+        unit_amount: plan.amountCents,
+        recurring: {
+          interval: plan.interval,
+          ...(plan.intervalCount && plan.intervalCount > 1
+            ? { interval_count: plan.intervalCount }
+            : {}),
+        },
+      },
+      quantity: 1,
+    });
+  }
+
+  // Add Domain Registration Upsell line item if selected
+  if (domainUpsell && domainUpsell.domain) {
+    const domainPriceCents = Math.round((domainUpsell.priceUsd || 12.0) * 100);
+    lineItems.push({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: `Custom Domain Registration: ${domainUpsell.domain}`,
+          description: `1-year registration via Cloudflare Registrar with WHOIS privacy & automated DNSSEC`,
+          metadata: {
+            domain: domainUpsell.domain,
+            type: "domain_registration_upsell",
+            platform: "alistwebs",
+          },
+        },
+        unit_amount: domainPriceCents,
+        recurring: {
+          interval: "year",
+        },
+      },
+      quantity: 1,
+    });
+  }
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     payment_method_types: ["card"],
-    line_items: [lineItem],
+    line_items: lineItems,
     customer: customerId,
     customer_email: customerId ? undefined : customerEmail,
     success_url: successUrl,
@@ -363,11 +435,14 @@ export async function createSubscriptionCheckoutSession({
         tier: plan.id,
         tierName: plan.name,
         customerEmail: customerEmail || "",
+        domain_upsell: domainUpsell?.domain || "",
       },
     },
     metadata: {
       tier: plan.id,
       customerEmail: customerEmail || "",
+      domain_upsell: domainUpsell?.domain || "",
+      domain_upsell_price: domainUpsell?.priceUsd ? String(domainUpsell.priceUsd) : "",
     },
   });
 
