@@ -13,6 +13,7 @@ import {
   createManagedCheckoutSession,
   recordCompletedSession,
   recordedCompletedSessions,
+  getAdminSubscriptionSummary,
 } from "./server/stripe";
 import { createCheckoutSessionHandler } from "./lib/stripe";
 import {
@@ -113,6 +114,18 @@ async function startServer() {
       isConfigured: isStripeConfigured(),
       plans: PLANS,
     });
+  });
+
+  // Admin Subscriptions API - live Stripe & billing analytics
+  app.get("/api/admin/subscriptions", async (_req, res) => {
+    try {
+      const summary = await getAdminSubscriptionSummary();
+      res.json(summary);
+    } catch (err: unknown) {
+      console.error("Error fetching admin subscriptions:", err);
+      const msg = err instanceof Error ? err.message : "Failed to load admin subscription summary";
+      res.status(500).json({ error: msg });
+    }
   });
 
   const handleCheckoutSession = async (req: express.Request, res: express.Response) => {

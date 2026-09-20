@@ -19,9 +19,30 @@
       "properties": {
         "email": { "type": "string", "format": "email" },
         "role": { "type": "string" },
-        "hasMailAccess": { "type": "boolean" }
+        "hasMailAccess": { "type": "boolean" },
+        "subscriptionTier": { "type": "string" },
+        "subscriptionStatus": { "type": "string" },
+        "stripeCustomerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["email", "role"]
+    },
+    "Subscription": {
+      "title": "Subscription",
+      "description": "User billing and subscription status",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "user_email": { "type": "string", "format": "email" },
+        "tier": { "type": "string" },
+        "status": { "type": "string" },
+        "stripeSubscriptionId": { "type": "string" },
+        "stripeCustomerId": { "type": "string" },
+        "currentPeriodEnd": { "type": "string" },
+        "domainUpsell": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "tier", "status"]
     },
     "Contact": {
       "title": "Contact",
@@ -154,6 +175,10 @@
     "/users/{userId}": {
       "schema": "User",
       "description": "User profiles"
+    },
+    "/subscriptions/{subscriptionId}": {
+      "schema": "Subscription",
+      "description": "User subscription records and billing status"
     },
     "/contacts/{contactId}": {
       "schema": "Contact",

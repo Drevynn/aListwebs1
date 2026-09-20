@@ -512,3 +512,184 @@ export async function getCustomerInvoices({
 
   return invoices.data;
 }
+
+export interface AdminSubscriptionItem {
+  id: string;
+  customerId: string;
+  customerEmail: string;
+  customerName?: string;
+  status: string;
+  planId: string;
+  planName: string;
+  tier: string;
+  interval: string;
+  amountCents: number;
+  currency: string;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  cancelAtPeriodEnd: boolean;
+  createdAt: string;
+  domainUpsell?: string;
+}
+
+export interface AdminSubscriptionSummary {
+  isConfigured: boolean;
+  mrrCents: number;
+  arrCents: number;
+  totalSubscribers: number;
+  activeSubscribers: number;
+  trialingSubscribers: number;
+  canceledSubscribers: number;
+  tierCounts: {
+    monthly: number;
+    biannual: number;
+    yearly: number;
+    free: number;
+  };
+  subscriptions: AdminSubscriptionItem[];
+  recentEvents: CheckoutCompletedRecord[];
+}
+
+/**
+ * Aggregates live subscription data and revenue metrics for the Admin Panel
+ */
+export async function getAdminSubscriptionSummary(): Promise<AdminSubscriptionSummary> {
+  const isConfigured = isStripeConfigured();
+  const summary: AdminSubscriptionSummary = {
+    isConfigured,
+    mrrCents: 0,
+    arrCents: 0,
+    totalSubscribers: 0,
+    activeSubscribers: 0,
+    trialingSubscribers: 0,
+    canceledSubscribers: 0,
+    tierCounts: {
+      monthly: 0,
+      biannual: 0,
+      yearly: 0,
+      free: 0,
+    },
+    subscriptions: [],
+    recentEvents: [...recordedCompletedSessions].reverse(),
+  };
+
+  if (isConfigured) {
+    try {
+      const stripe = getStripe();
+      const list = await stripe.subscriptions.list({
+        limit: 100,
+        expand: ["data.customer"],
+      });
+
+      for (const sub of list.data) {
+        summary.totalSubscribers++;
+        const customer = typeof sub.customer === "object" && sub.customer && !("deleted" in sub.customer && sub.customer.deleted)
+          ? (sub.customer as Stripe.Customer)
+          : null;
+        const email = customer?.email || (sub.metadata?.customer_email) || "subscriber@alistwebs.com";
+        const name = customer?.name || sub.metadata?.customer_name || undefined;
+
+        const price = sub.items.data[0]?.price;
+        const amountCents = price?.unit_amount || 4700;
+        const currency = price?.currency || "usd";
+        const interval = price?.recurring?.interval || "month";
+        const intervalCount = price?.recurring?.interval_count || 1;
+
+        let tier = "monthly";
+        let planName = "Monthly Creator";
+        if (interval === "year") {
+          tier = "yearly";
+          planName = "Annual Sovereign";
+        } else if (intervalCount === 6) {
+          tier = "biannual";
+          planName = "Bi-Annual Pro";
+        }
+
+        if (sub.status === "active") {
+          summary.activeSubscribers++;
+          if (tier === "yearly") {
+            summary.tierCounts.yearly++;
+            summary.mrrCents += Math.round(amountCents / 12);
+          } else if (tier === "biannual") {
+            summary.tierCounts.biannual++;
+            summary.mrrCents += Math.round(amountCents / 6);
+          } else {
+            summary.tierCounts.monthly++;
+            summary.mrrCents += amountCents;
+          }
+        } else if (sub.status === "trialing") {
+          summary.trialingSubscribers++;
+        } else if (sub.status === "canceled") {
+          summary.canceledSubscribers++;
+        }
+
+        summary.subscriptions.push({
+          id: sub.id,
+          customerId: typeof sub.customer === "string" ? sub.customer : sub.customer.id,
+          customerEmail: email,
+          customerName: name,
+          status: sub.status,
+          planId: price?.id || tier,
+          planName,
+          tier,
+          interval: intervalCount > 1 ? `${intervalCount} months` : interval,
+          amountCents,
+          currency,
+          currentPeriodStart: new Date(sub.current_period_start * 1000).toISOString(),
+          currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
+          cancelAtPeriodEnd: sub.cancel_at_period_end,
+          createdAt: new Date(sub.created * 1000).toISOString(),
+          domainUpsell: sub.metadata?.domain_registration || undefined,
+        });
+      }
+
+      summary.arrCents = summary.mrrCents * 12;
+      return summary;
+    } catch (err) {
+      console.warn("Could not query live Stripe subscriptions:", err);
+    }
+  }
+
+  // If Stripe returned empty or not configured, fold in recordedCompletedSessions
+  if (recordedCompletedSessions.length > 0) {
+    for (const record of recordedCompletedSessions) {
+      summary.totalSubscribers++;
+      summary.activeSubscribers++;
+      const tier = record.metadata?.tier || "monthly";
+      const amount = record.amountTotal || (tier === "yearly" ? 39700 : tier === "biannual" ? 23400 : 4700);
+
+      if (tier === "yearly") {
+        summary.tierCounts.yearly++;
+        summary.mrrCents += Math.round(amount / 12);
+      } else if (tier === "biannual") {
+        summary.tierCounts.biannual++;
+        summary.mrrCents += Math.round(amount / 6);
+      } else {
+        summary.tierCounts.monthly++;
+        summary.mrrCents += amount;
+      }
+
+      summary.subscriptions.push({
+        id: record.sessionId,
+        customerId: record.customerId || "cus_simulated",
+        customerEmail: record.customerEmail || "creator@alistwebs.com",
+        status: "active",
+        planId: tier,
+        planName: tier === "yearly" ? "Annual Sovereign" : tier === "biannual" ? "Bi-Annual Pro" : "Monthly Creator",
+        tier,
+        interval: tier === "yearly" ? "year" : tier === "biannual" ? "6 months" : "month",
+        amountCents: amount,
+        currency: record.currency || "usd",
+        currentPeriodStart: record.timestamp,
+        currentPeriodEnd: new Date(Date.now() + 30 * 86400000).toISOString(),
+        cancelAtPeriodEnd: false,
+        createdAt: record.timestamp,
+        domainUpsell: record.domainUpsell,
+      });
+    }
+  }
+
+  summary.arrCents = summary.mrrCents * 12;
+  return summary;
+}
+

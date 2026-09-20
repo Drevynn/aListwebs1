@@ -10,7 +10,7 @@ import CloudSearchBar from "@/components/CloudSearchBar";
 import BillingManagerModal from "@/components/BillingManagerModal";
 
 const Navbar = () => {
-  const { user, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -205,7 +205,17 @@ const Navbar = () => {
                 <Button variant="ghost" size="sm" onClick={() => navigate("/mail")} className="text-xs h-8 px-2.5">
                   Alist Mail
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="text-xs h-8 px-2.5">
+                <Button
+                  variant={isAdmin ? "outline" : "ghost"}
+                  size="sm"
+                  onClick={() => navigate("/admin")}
+                  className={`text-xs h-8 px-2.5 gap-1.5 ${
+                    isAdmin
+                      ? "border-gold/40 text-gold hover:bg-gold/15 hover:border-gold font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <ShieldCheck className={`w-3.5 h-3.5 ${isAdmin ? "text-gold" : "text-muted-foreground"}`} />
                   Admin
                 </Button>
                 <Button
@@ -419,9 +429,14 @@ const Navbar = () => {
                         navigate("/admin");
                         setIsOpen(false);
                       }}
-                      className="w-full justify-center border-white/10 text-white hover:bg-white/5"
+                      className={`w-full justify-center gap-2 ${
+                        isAdmin
+                          ? "border-gold/50 text-gold bg-gold/10 font-semibold"
+                          : "border-white/10 text-white hover:bg-white/5"
+                      }`}
                     >
-                      Admin Dashboard
+                      <ShieldCheck className={`w-4 h-4 ${isAdmin ? "text-gold" : "text-muted-foreground"}`} />
+                      Admin Operations
                     </Button>
                     <Button
                       variant="outline"
