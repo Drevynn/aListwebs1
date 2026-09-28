@@ -1,3 +1,5 @@
+import type { PortfolioData } from "./types/portfolio";
+
 export interface Site {
   id: string;
   user_id: string;
@@ -12,6 +14,7 @@ export interface Site {
   published_url?: string;
   view_count?: number;
   tags?: string[];
+  portfolio_data?: PortfolioData;
 }
 
 export interface UserProfile {
@@ -43,6 +46,51 @@ export interface AdminSubscriptionRecord {
   cancelAtPeriodEnd?: boolean;
   createdAt: string;
   domainUpsell?: string;
+  mailUpsell?: boolean | string;
+}
+
+export interface Mailbox {
+  id: string;
+  userId: string;
+  domain: string;
+  address: string;
+  displayName: string;
+  unreadCount: number;
+  totalCount: number;
+  quotaMb: number;
+  usedMb: number;
+  createdAt: string;
+}
+
+export interface MailMessage {
+  id: string;
+  userId: string;
+  mailboxId?: string;
+  domain: string;
+  folder: "inbox" | "sent" | "drafts" | "trash" | "starred";
+  from: string;
+  fromName: string;
+  to: string;
+  subject: string;
+  body: string;
+  isRead: boolean;
+  isStarred: boolean;
+  createdAt: string;
+  messageIdHeader?: string;
+  spfStatus?: "PASS" | "NEUTRAL" | "FAIL";
+  dkimStatus?: "PASS" | "NEUTRAL" | "FAIL";
+}
+
+export interface DomainDnsStatus {
+  domain: string;
+  mxRecord: { type: string; name: string; value: string; priority: number; status: string };
+  spfRecord: { type: string; name: string; value: string; status: string };
+  dkimRecord: { type: string; name: string; value: string; status: string };
+  dmarcRecord: { type: string; name: string; value: string; status: string };
+  deliverabilityScore: number;
+  tlsEnforced: boolean;
+  antivirusScanning: string;
+  spamProtection: string;
 }
 
 export interface AdminAnalyticsSummary {

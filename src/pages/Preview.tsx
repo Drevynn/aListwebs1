@@ -4,9 +4,10 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Site } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, Music, FileText } from "lucide-react";
+import { ArrowLeft, Loader2, Music, FileText, ShieldCheck } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { CreateSiteDocDialog } from "@/components/docs/CreateSiteDocDialog";
+import VerifiedTalentBadge from "@/components/portfolio/VerifiedTalentBadge";
 
 const PreviewPage = () => {
   const { siteId } = useParams();
@@ -80,6 +81,22 @@ const PreviewPage = () => {
           <h1 className="text-6xl md:text-8xl font-display font-bold tracking-tighter text-white uppercase">
             {site?.name || "Untitled Site"}
           </h1>
+
+          {/* If the site is linked to verified talent */}
+          {site?.portfolio_data?.profile?.isVerifiedTalent && (
+            <div className="flex justify-center pt-1">
+              <VerifiedTalentBadge
+                isVerified={true}
+                talentName={site.portfolio_data.profile.stageName || site.name}
+                discipline={site.portfolio_data.profile.discipline}
+                badgeData={site.portfolio_data.profile.verifiedBadge}
+                unions={site.portfolio_data.profile.unionCredentials || site.portfolio_data.profile.unions}
+                professionalLinks={site.portfolio_data.profile.professionalLinks}
+                variant="pill"
+              />
+            </div>
+          )}
+
           <p className="text-xl md:text-2xl text-white/60 max-w-2xl mx-auto font-light">
             Sovereign Digital Presence
           </p>

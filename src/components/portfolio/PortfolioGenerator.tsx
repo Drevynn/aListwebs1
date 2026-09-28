@@ -19,6 +19,8 @@ import { FilmCreditsManager } from "./FilmCreditsManager";
 import { EquipmentKitManager } from "./EquipmentKitManager";
 import SEOSchemaViewer from "./SEOSchemaViewer";
 import LivePortfolioPreview from "./LivePortfolioPreview";
+import VerifiedTalentBadge from "./VerifiedTalentBadge";
+import TalentVerificationModal from "./TalentVerificationModal";
 import { HollywoodGeniusModal } from "@/components/HollywoodGeniusModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +61,7 @@ export default function PortfolioGenerator() {
   const [hasLoadedFirebase, setHasLoadedFirebase] = useState(false);
   const [isGeniusOpen, setIsGeniusOpen] = useState(false);
   const [geniusPrompt, setGeniusPrompt] = useState<string | undefined>(undefined);
+  const [isVerificationOpen, setIsVerificationOpen] = useState(false);
 
   // Calculate audit score for the badge
   const audit = auditSEOSchema(portfolio);
@@ -189,6 +192,20 @@ export default function PortfolioGenerator() {
               <span className="ml-1.5 px-1.5 py-0.5 rounded bg-zinc-950/20 text-[10px] uppercase font-mono">
                 Assistant
               </span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsVerificationOpen(true)}
+              className={`text-xs rounded-xl border transition-all ${
+                portfolio.profile.isVerifiedTalent
+                  ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20"
+                  : "border-amber-500/40 text-amber-300 hover:text-white hover:bg-amber-500/10"
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
+              {portfolio.profile.isVerifiedTalent ? "Verified Talent Active" : "Verify Guild Credentials"}
             </Button>
 
             <Button
@@ -396,6 +413,28 @@ export default function PortfolioGenerator() {
           <span>6. Music ({portfolio.discography.length})</span>
         </button>
 
+        <button
+          type="button"
+          onClick={() => setIsVerificationOpen(true)}
+          className={`px-4 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
+            portfolio.profile.isVerifiedTalent
+              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+              : "bg-zinc-900/60 text-zinc-400 hover:text-amber-300 border border-white/10"
+          }`}
+        >
+          <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+          <span>7. Guild Verification</span>
+          {portfolio.profile.isVerifiedTalent ? (
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-mono">
+              ✓ Verified
+            </span>
+          ) : (
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/10 text-amber-300 font-mono">
+              Get Badge
+            </span>
+          )}
+        </button>
+
         <div className="hidden sm:block h-6 w-[1px] bg-white/10 mx-1" />
 
         <button
@@ -474,13 +513,24 @@ export default function PortfolioGenerator() {
         )}
 
         {activeTab === "preview" && (
-          <LivePortfolioPreview portfolio={portfolio} />
+          <LivePortfolioPreview
+            portfolio={portfolio}
+            onOpenVerification={() => setIsVerificationOpen(true)}
+          />
         )}
 
         {activeTab === "schema" && (
           <SEOSchemaViewer portfolio={portfolio} />
         )}
       </div>
+
+      {/* Talent & Guild Verification Modal Flow */}
+      <TalentVerificationModal
+        open={isVerificationOpen}
+        onOpenChange={setIsVerificationOpen}
+        profile={portfolio.profile}
+        onProfileUpdated={(updated) => setPortfolio({ ...portfolio, profile: updated })}
+      />
 
       {/* Hollywood Genius Floating Assistant Modal */}
       <HollywoodGeniusModal

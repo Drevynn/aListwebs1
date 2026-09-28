@@ -287,7 +287,7 @@ export const SubscriptionStatusSection: React.FC<SubscriptionStatusSectionProps>
                   <th className="py-3 px-4">Plan & Billing</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Renews / Ended</th>
-                  <th className="py-3 px-4">Domain Upsell</th>
+                  <th className="py-3 px-4">Upsells & Add-ons</th>
                   <th className="py-3 px-4 text-right">Stripe Reference</th>
                 </tr>
               </thead>
@@ -372,14 +372,23 @@ export const SubscriptionStatusSection: React.FC<SubscriptionStatusSectionProps>
                       </td>
 
                       <td className="py-3.5 px-4 text-xs font-mono">
-                        {item.domainUpsell ? (
-                          <span className="inline-flex items-center gap-1 text-sky-400">
-                            <Sparkles className="w-3 h-3 text-gold" />
-                            {item.domainUpsell}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground/40">—</span>
-                        )}
+                        <div className="flex flex-col gap-1 items-start">
+                          {item.domainUpsell && (
+                            <span className="inline-flex items-center gap-1 text-sky-400">
+                              <Sparkles className="w-3 h-3 text-gold" />
+                              {item.domainUpsell}
+                            </span>
+                          )}
+                          {item.mailUpsell && (
+                            <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 text-[10px]">
+                              <Mail className="w-2.5 h-2.5" />
+                              Alist Mail Active
+                            </span>
+                          )}
+                          {!item.domainUpsell && !item.mailUpsell && (
+                            <span className="text-muted-foreground/40">—</span>
+                          )}
+                        </div>
                       </td>
 
                       <td className="py-3.5 px-4 text-right font-mono text-xs">

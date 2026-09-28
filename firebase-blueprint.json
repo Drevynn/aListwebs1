@@ -157,6 +157,117 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["stripeSessionId", "amount", "currency", "status"]
+    },
+    "Mailbox": {
+      "title": "Mailbox",
+      "description": "Domain-linked custom email address mailbox for sending and receiving",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "domain": { "type": "string" },
+        "emailAddress": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "quotaMb": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "domain", "emailAddress", "status"]
+    },
+    "MailMessage": {
+      "title": "MailMessage",
+      "description": "Received or sent email item in a sovereign domain mailbox",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "mailbox_id": { "type": "string" },
+        "domain": { "type": "string" },
+        "folder": { "type": "string" },
+        "from": { "type": "string" },
+        "fromName": { "type": "string" },
+        "to": { "type": "string" },
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "isStarred": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "folder", "from", "to", "subject", "body"]
+    },
+    "CMSContent": {
+      "title": "CMSContent",
+      "description": "User created articles, announcements, releases, and press items",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "type": "string" },
+        "summary": { "type": "string" },
+        "body": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "title", "type", "status"]
+    },
+    "DesignPartner": {
+      "title": "DesignPartner",
+      "description": "Founding cohort design partner application",
+      "type": "object",
+      "properties": {
+        "bandName": { "type": "string" },
+        "discipline": { "type": "string" },
+        "links": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "frustrations": { "type": "string" },
+        "source": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["bandName", "email"]
+    },
+    "Portfolio": {
+      "title": "Portfolio",
+      "description": "Artist portfolio, showreels, headshots, and credentials",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "artistName": { "type": "string" },
+        "headline": { "type": "string" },
+        "bio": { "type": "string" },
+        "discipline": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id"]
+    },
+    "SiteDocument": {
+      "title": "SiteDocument",
+      "description": "Google Doc linked to a user site",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "site_id": { "type": "string" },
+        "document_id": { "type": "string" },
+        "title": { "type": "string" },
+        "doc_type": { "type": "string" },
+        "google_doc_url": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "site_id", "document_id", "title"]
+    },
+    "TalentVerification": {
+      "title": "TalentVerification",
+      "description": "Union credential and professional profile verification request",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "talentName": { "type": "string" },
+        "legalName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "discipline": { "type": "string" },
+        "filmDepartment": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "verified", "rejected"] },
+        "submissionDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "talentName", "status"]
     }
   },
   "firestore": {
@@ -188,6 +299,14 @@
       "schema": "Email",
       "description": "Sent email log"
     },
+    "/mailboxes/{mailboxId}": {
+      "schema": "Mailbox",
+      "description": "User domain mailboxes"
+    },
+    "/mail_messages/{messageId}": {
+      "schema": "MailMessage",
+      "description": "Inbound and outbound email messages"
+    },
     "/cloud_connections/{connectionId}": {
       "schema": "CloudConnection",
       "description": "Linked cloud accounts"
@@ -203,6 +322,26 @@
     "/sync_configs/{syncId}": {
       "schema": "SyncConfig",
       "description": "Directory sync configurations"
+    },
+    "/cms_content/{contentId}": {
+      "schema": "CMSContent",
+      "description": "CMS published and draft content items"
+    },
+    "/design_partners/{partnerId}": {
+      "schema": "DesignPartner",
+      "description": "Design partner applications for founding cohort"
+    },
+    "/portfolios/{portfolioId}": {
+      "schema": "Portfolio",
+      "description": "Artist portfolios and showreel hubs"
+    },
+    "/site_documents/{docId}": {
+      "schema": "SiteDocument",
+      "description": "Site Google Docs records"
+    },
+    "/talent_verifications/{verificationId}": {
+      "schema": "TalentVerification",
+      "description": "Talent union and professional link verification requests"
     }
   }
 }

@@ -23,6 +23,7 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminStatsRibbon } from "@/components/admin/AdminStatsRibbon";
 import { SiteAnalyticsSection } from "@/components/admin/SiteAnalyticsSection";
 import { SubscriptionStatusSection } from "@/components/admin/SubscriptionStatusSection";
+import { TalentVerificationsSection } from "@/components/admin/TalentVerificationsSection";
 import { AdminAccessDenied } from "@/components/admin/AdminAccessDenied";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -30,11 +31,12 @@ import { toast } from "sonner";
 const AdminPage: React.FC = () => {
   const { user, isAdmin, loading: authLoading, refreshAdminStatus } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"analytics" | "subscriptions">("analytics");
+  const [activeTab, setActiveTab] = useState<"analytics" | "subscriptions" | "verifications">("analytics");
   const [sites, setSites] = useState<Site[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [subscriptions, setSubscriptions] = useState<AdminSubscriptionRecord[]>([]);
+  const [verificationCount, setVerificationCount] = useState<number>(0);
   const [mrrCents, setMrrCents] = useState<number>(0);
   const [arrCents, setArrCents] = useState<number>(0);
   const [isStripeConfigured, setIsStripeConfigured] = useState<boolean>(true);
@@ -47,12 +49,15 @@ const AdminPage: React.FC = () => {
   const fetchAdminData = useCallback(async () => {
     try {
       // 1. Fetch Firestore collections
-      const [sitesSnap, usersSnap, contactsSnap, subscriptionsSnap] = await Promise.all([
+      const [sitesSnap, usersSnap, contactsSnap, subscriptionsSnap, verifsSnap] = await Promise.all([
         getDocs(collection(db, "sites")).catch(() => ({ docs: [] })),
         getDocs(collection(db, "users")).catch(() => ({ docs: [] })),
         getDocs(collection(db, "contacts")).catch(() => ({ docs: [] })),
         getDocs(collection(db, "subscriptions")).catch(() => ({ docs: [] })),
+        getDocs(collection(db, "talent_verifications")).catch(() => ({ docs: [] })),
       ]);
+
+      setVerificationCount(verifsSnap.docs.length);
 
       const loadedSites: Site[] = sitesSnap.docs.map((d) => ({
         id: d.id,
@@ -100,7 +105,10 @@ const AdminPage: React.FC = () => {
 
       // 2. Fetch server-side Stripe subscription summary
       try {
-        const res = await fetch("/api/admin/subscriptions");
+        const idToken = user ? await user.getIdToken() : "";
+        const res = await fetch("/api/admin/subscriptions", {
+          headers: idToken ? { Authorization: `Bearer ${idToken}` } : {},
+        });
         if (res.ok) {
           const summary: AdminAnalyticsSummary = await res.json();
           setIsStripeConfigured(summary.isConfigured);
@@ -133,7 +141,7 @@ const AdminPage: React.FC = () => {
       setDataLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -334,6 +342,7 @@ const AdminPage: React.FC = () => {
           isRefreshing={isRefreshing}
           totalSites={totalSites}
           totalSubscribers={totalSubscribers}
+          totalVerifications={verificationCount}
           isStripeConfigured={isStripeConfigured}
         />
 
@@ -372,6 +381,11 @@ const AdminPage: React.FC = () => {
             onRefresh={handleRefresh}
             isRefreshing={isRefreshing}
           />
+        )}
+
+        {/* Tab 3: Talent & Guild Verifications */}
+        {activeTab === "verifications" && (
+          <TalentVerificationsSection onRefresh={fetchAdminData} />
         )}
       </main>
     </div>

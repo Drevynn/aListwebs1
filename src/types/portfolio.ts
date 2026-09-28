@@ -1,3 +1,11 @@
+import { 
+  UnionCredential, 
+  ProfessionalProfileLink, 
+  VerifiedTalentBadgeData, 
+  VerificationStatus,
+  AgencyRepresentationInfo 
+} from './verification';
+
 export type CreatorDiscipline = 'musician' | 'actor' | 'film_crew' | 'dual';
 
 export type FilmDepartment =
@@ -64,6 +72,14 @@ export interface ShowreelItem {
   thumbnailUrl?: string;
   description?: string;
   isPrivate?: boolean;
+  awardLaurel?: string;
+  cameraPackage?: string;
+  resolution?: string;
+  director?: string;
+  dp?: string;
+  scenePartner?: string;
+  order?: number;
+  tags?: string[];
 }
 
 export interface TrackItem {
@@ -125,6 +141,13 @@ export interface PortfolioProfile {
   bookingPhone?: string;
   location?: string;
   websiteUrl?: string;
+  // Verification and Guild Standing
+  isVerifiedTalent?: boolean;
+  verificationStatus?: VerificationStatus;
+  verifiedBadge?: VerifiedTalentBadgeData;
+  unionCredentials?: UnionCredential[];
+  professionalLinks?: ProfessionalProfileLink[];
+  agencyRepresentation?: AgencyRepresentationInfo;
 }
 
 export interface PortfolioData {

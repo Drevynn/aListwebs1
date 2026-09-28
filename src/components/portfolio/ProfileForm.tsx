@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { FILM_DEPARTMENTS, ALL_FILM_GUILDS } from "@/lib/filmDepartments";
+import VerifiedTalentBadge from "./VerifiedTalentBadge";
+import TalentVerificationModal from "./TalentVerificationModal";
 
 interface ProfileFormProps {
   profile: PortfolioProfile;
@@ -46,6 +48,7 @@ const COMMON_UNIONS = [
 export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
   const [newUnion, setNewUnion] = useState("");
   const [newGenre, setNewGenre] = useState("");
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
 
   const setField = <K extends keyof PortfolioProfile>(field: K, value: PortfolioProfile[K]) => {
     onChange({ ...profile, [field]: value });
@@ -319,6 +322,88 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
         </div>
       </div>
 
+      {/* Verified Talent Status & Guild Registry Card */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-amber-950/30 via-zinc-900 to-black border border-amber-500/30 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-500 to-emerald-500 text-zinc-950 shadow-md shadow-amber-500/20">
+              <ShieldCheck className="w-6 h-6 text-black" strokeWidth={2.4} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-gold uppercase tracking-wider font-semibold">
+                  Official Talent Verification Status
+                </span>
+                {profile.isVerifiedTalent ? (
+                  <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[10px] font-mono">
+                    ✓ Verified Talent Active
+                  </Badge>
+                ) : profile.verificationStatus === "pending" ? (
+                  <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-[10px] font-mono">
+                    ⏳ Under Review
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[10px] font-mono text-zinc-400 border-white/20">
+                    Unverified
+                  </Badge>
+                )}
+              </div>
+              <h3 className="text-lg font-display font-bold text-white mt-0.5">
+                {profile.isVerifiedTalent
+                  ? "Sovereign Guild Verified Talent"
+                  : "Submit Union Credentials for 'Verified Talent' Badge"}
+              </h3>
+              <p className="text-xs text-zinc-400 max-w-xl mt-1 leading-relaxed">
+                {profile.isVerifiedTalent
+                  ? `Your profile displays the prestigious Verified Talent badge across all public search and showcase portals (${profile.verifiedBadge?.verificationToken || "ALIST-VERIFIED"}).`
+                  : "Signal your active SAG-AFTRA, IATSE, DGA, Equity, or AFM membership and vetted IMDb / Casting profile links to producers, casting directors, and clients."}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-stretch sm:self-auto">
+            {profile.isVerifiedTalent && (
+              <VerifiedTalentBadge
+                isVerified={true}
+                talentName={profile.stageName}
+                discipline={profile.discipline}
+                badgeData={profile.verifiedBadge}
+                unions={profile.unionCredentials || profile.unions}
+                variant="compact"
+              />
+            )}
+
+            <Button
+              type="button"
+              onClick={() => setIsVerificationModalOpen(true)}
+              className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-zinc-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 border-0"
+            >
+              <ShieldCheck className="w-4 h-4 mr-1.5" />
+              {profile.isVerifiedTalent ? "Manage Credentials" : "Start Verification Flow"}
+            </Button>
+          </div>
+        </div>
+
+        {profile.isVerifiedTalent && (
+          <div className="pt-3 border-t border-white/10 flex flex-wrap items-center gap-4 text-xs font-mono text-zinc-300">
+            <span className="text-zinc-500">Public Badge:</span>
+            <VerifiedTalentBadge
+              isVerified={true}
+              talentName={profile.stageName}
+              discipline={profile.discipline}
+              badgeData={profile.verifiedBadge}
+              unions={profile.unionCredentials || profile.unions}
+              variant="pill"
+            />
+            {profile.verifiedBadge?.verificationToken && (
+              <span className="text-gold">
+                Token: {profile.verifiedBadge.verificationToken}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Unions & Guild Affiliations */}
       <div className="space-y-3 p-5 rounded-2xl bg-zinc-900/60 border border-white/10">
         <div className="flex items-center justify-between">
@@ -512,6 +597,14 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
           </div>
         </div>
       </div>
+
+      {/* Talent Verification Flow Modal */}
+      <TalentVerificationModal
+        open={isVerificationModalOpen}
+        onOpenChange={setIsVerificationModalOpen}
+        profile={profile}
+        onProfileUpdated={(updated) => onChange(updated)}
+      />
     </div>
   );
 }

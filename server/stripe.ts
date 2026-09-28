@@ -16,6 +16,7 @@ export interface CheckoutCompletedRecord {
   timestamp: string;
   metadata: Record<string, string>;
   snapshot: Stripe.Checkout.Session;
+  domainUpsell?: string;
 }
 
 export const recordedCompletedSessions: CheckoutCompletedRecord[] = [];
@@ -38,8 +39,15 @@ export function getStripe(): Stripe {
   return stripeClient;
 }
 
+export function isValidStripeSecretKey(key?: string): boolean {
+  if (!key) return false;
+  const trimmed = key.trim();
+  // Valid Stripe secret keys start with sk_test_, sk_live_, rk_test_, or rk_live_
+  return trimmed.startsWith("sk_test_") || trimmed.startsWith("sk_live_") || trimmed.startsWith("rk_test_") || trimmed.startsWith("rk_live_");
+}
+
 export function isStripeConfigured(): boolean {
-  return Boolean(process.env.STRIPE_SECRET_KEY);
+  return isValidStripeSecretKey(process.env.STRIPE_SECRET_KEY);
 }
 
 export interface PlanConfig {
@@ -282,6 +290,7 @@ export function recordCompletedSession(session: Stripe.Checkout.Session): Checko
     timestamp: new Date().toISOString(),
     metadata: (session.metadata as Record<string, string>) || {},
     snapshot: session,
+    domainUpsell: session.metadata?.domain_upsell || session.metadata?.domain_registration || undefined,
   };
 
   recordedCompletedSessions.unshift(record);
@@ -341,6 +350,7 @@ export async function createSubscriptionCheckoutSession({
   successUrl,
   cancelUrl,
   domainUpsell,
+  mailUpsell,
 }: {
   tier: string;
   priceId?: string;
@@ -349,6 +359,11 @@ export async function createSubscriptionCheckoutSession({
   cancelUrl: string;
   domainUpsell?: {
     domain: string;
+    priceUsd?: number;
+  };
+  mailUpsell?: {
+    enabled: boolean;
+    domain?: string;
     priceUsd?: number;
   };
 }): Promise<Stripe.Checkout.Session> {
@@ -420,6 +435,35 @@ export async function createSubscriptionCheckoutSession({
     });
   }
 
+  // Add Alist Mail Sovereign Inbox Upsell line item if selected
+  if (mailUpsell && mailUpsell.enabled) {
+    const isYearly = plan.interval === "year";
+    const mailPriceCents = mailUpsell.priceUsd ? Math.round(mailUpsell.priceUsd * 100) : (isYearly ? 4900 : 500);
+    const mailDomain = mailUpsell.domain || domainUpsell?.domain || "Custom Domain";
+    lineItems.push({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: `Alist Mail Suite (${mailDomain})`,
+          description: `Sovereign domain email inbox & webmail client with zero middleman tracking and 25GB storage.`,
+          metadata: {
+            domain: mailDomain,
+            type: "alist_mail_upsell",
+            platform: "alistwebs",
+          },
+        },
+        unit_amount: mailPriceCents,
+        recurring: {
+          interval: plan.interval,
+          ...(plan.intervalCount && plan.intervalCount > 1
+            ? { interval_count: plan.intervalCount }
+            : {}),
+        },
+      },
+      quantity: 1,
+    });
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     payment_method_types: ["card"],
@@ -436,6 +480,8 @@ export async function createSubscriptionCheckoutSession({
         tierName: plan.name,
         customerEmail: customerEmail || "",
         domain_upsell: domainUpsell?.domain || "",
+        mail_upsell: mailUpsell?.enabled ? "true" : "false",
+        mail_domain: mailUpsell?.domain || domainUpsell?.domain || "",
       },
     },
     metadata: {
@@ -443,6 +489,86 @@ export async function createSubscriptionCheckoutSession({
       customerEmail: customerEmail || "",
       domain_upsell: domainUpsell?.domain || "",
       domain_upsell_price: domainUpsell?.priceUsd ? String(domainUpsell.priceUsd) : "",
+      mail_upsell: mailUpsell?.enabled ? "true" : "false",
+      mail_domain: mailUpsell?.domain || domainUpsell?.domain || "",
+    },
+  });
+
+  return session;
+}
+
+/**
+ * Creates a standalone checkout session specifically for Alist Mail Suite ($5/mo or $49/yr)
+ */
+export async function createMailSubscriptionCheckoutSession({
+  customerEmail,
+  domain,
+  interval = "month",
+  successUrl,
+  cancelUrl,
+}: {
+  customerEmail?: string;
+  domain: string;
+  interval?: "month" | "year";
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<Stripe.Checkout.Session> {
+  const stripe = getStripe();
+  const cleanDomain = domain.trim().toLowerCase() || "alistwebs.com";
+
+  let customerId: string | undefined = undefined;
+  if (customerEmail) {
+    const customer = await getOrCreateCustomer(customerEmail);
+    customerId = customer.id;
+  }
+
+  const isYearly = interval === "year";
+  const unitAmount = isYearly ? 4900 : 500; // $49/year or $5/month
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Alist Mail Suite (${cleanDomain})`,
+            description: `Sovereign email hosting, webmail client, SPF/DKIM authentication, and 25GB storage for @${cleanDomain}.`,
+            metadata: {
+              domain: cleanDomain,
+              type: "alist_mail_standalone",
+              platform: "alistwebs",
+            },
+          },
+          unit_amount: unitAmount,
+          recurring: {
+            interval: isYearly ? "year" : "month",
+          },
+        },
+        quantity: 1,
+      },
+    ],
+    customer: customerId,
+    customer_email: customerId ? undefined : customerEmail,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    allow_promotion_codes: true,
+    billing_address_collection: "auto",
+    subscription_data: {
+      metadata: {
+        tier: "alist_mail",
+        tierName: "Alist Mail Suite",
+        customerEmail: customerEmail || "",
+        mail_upsell: "true",
+        mail_domain: cleanDomain,
+      },
+    },
+    metadata: {
+      tier: "alist_mail",
+      customerEmail: customerEmail || "",
+      mail_upsell: "true",
+      mail_domain: cleanDomain,
     },
   });
 
@@ -530,6 +656,7 @@ export interface AdminSubscriptionItem {
   cancelAtPeriodEnd: boolean;
   createdAt: string;
   domainUpsell?: string;
+  mailUpsell?: boolean | string;
 }
 
 export interface AdminSubscriptionSummary {
@@ -640,6 +767,7 @@ export async function getAdminSubscriptionSummary(): Promise<AdminSubscriptionSu
           cancelAtPeriodEnd: sub.cancel_at_period_end,
           createdAt: new Date(sub.created * 1000).toISOString(),
           domainUpsell: sub.metadata?.domain_registration || undefined,
+          mailUpsell: sub.metadata?.mail_upsell === "true" || Boolean(sub.metadata?.mail_domain),
         });
       }
 
@@ -685,6 +813,7 @@ export async function getAdminSubscriptionSummary(): Promise<AdminSubscriptionSu
         cancelAtPeriodEnd: false,
         createdAt: record.timestamp,
         domainUpsell: record.domainUpsell,
+        mailUpsell: record.metadata?.mail_upsell === "true" || Boolean(record.metadata?.mail_domain),
       });
     }
   }

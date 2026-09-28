@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -15,6 +15,8 @@ import { HollywoodGeniusShowcase } from "@/components/landing/HollywoodGeniusSho
 import { HollywoodGeniusModal } from "@/components/HollywoodGeniusModal";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Features from "@/components/landing/Features";
+import { InboxPreview } from "@/components/landing/InboxPreview";
+import { FeaturesSection as MailFeaturesSection } from "@/components/landing/FeaturesSection";
 import Pricing from "@/components/landing/Pricing";
 import FAQ from "@/components/landing/FAQ";
 import CTA from "@/components/landing/CTA";
@@ -39,12 +41,32 @@ import { Music, Eye, Loader2, Plus, FileText, Sparkles, Clapperboard } from "luc
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sites, setSites] = useState<Site[]>([]);
   const [loadingSites, setLoadingSites] = useState(false);
   const [selectedSiteForDoc, setSelectedSiteForDoc] = useState<Site | null>(null);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [isGeniusOpen, setIsGeniusOpen] = useState(false);
   const [geniusPrompt, setGeniusPrompt] = useState<string | undefined>(undefined);
+
+  // Smooth scroll handler for anchor links across page navigations and initial load
+  useEffect(() => {
+    const hash = location.hash || (location.pathname === "/pricing" ? "#pricing" : "");
+    if (hash) {
+      const timeoutId = setTimeout(() => {
+        const element = document.querySelector(hash);
+        if (element) {
+          const navHeight = 80;
+          const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - navHeight;
+          window.scrollTo({
+            top: targetPosition,
+            behavior: "smooth",
+          });
+        }
+      }, 150);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [location.hash, location.pathname, user, loadingSites]);
 
   const handleOpenGenius = (prompt?: string) => {
     setGeniusPrompt(prompt);
@@ -183,6 +205,10 @@ const Index = () => {
             <HelpAndHowTo />
           </div>
           
+          <div id="pricing" className="pt-8">
+            <Pricing />
+          </div>
+
           <UpgradeCallout />
 
           <CreateSiteDocDialog
@@ -216,6 +242,9 @@ const Index = () => {
         <Solution />
         <HowItWorks />
         <Features />
+        {/* Sovereign Alist Mail & Custom Domain Suite Showcase */}
+        <InboxPreview />
+        <MailFeaturesSection />
         <div id="help" className="py-12 bg-zinc-950/20">
           <div className="max-w-5xl mx-auto px-4">
             <HelpAndHowTo />

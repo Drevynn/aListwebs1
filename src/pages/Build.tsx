@@ -71,6 +71,10 @@ async function streamChat({
 
       try {
         const parsed = JSON.parse(jsonStr);
+        if (parsed.error) {
+          onError(parsed.error);
+          return;
+        }
         const content = parsed.choices?.[0]?.delta?.content as string | undefined;
         if (content) onDelta(content);
       } catch {
@@ -217,7 +221,7 @@ const BuildPage = () => {
     };
 
     await streamChat({
-      messages: [],
+      messages: [{ role: "user", content: "Hello! I am ready to design my website." }],
       onDelta: upsertAssistant,
       onDone: () => {
         setIsLoading(false);

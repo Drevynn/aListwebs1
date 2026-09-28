@@ -44,7 +44,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const email = currentUser.email?.toLowerCase().trim() || "";
-    const isHardcodedAdmin = ADMIN_EMAILS.includes(email);
+    const isVerifiedEmail = Boolean(
+      currentUser.emailVerified || 
+      currentUser.providerData.some((p) => p.providerId === "google.com")
+    );
+    const isHardcodedAdmin = ADMIN_EMAILS.includes(email) && isVerifiedEmail;
 
     let dbAdmin = false;
     let profile: UserProfile | null = null;

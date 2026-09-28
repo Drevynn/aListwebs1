@@ -1,8 +1,10 @@
 import { PortfolioData, ShowreelItem } from "@/types/portfolio";
 import { parseVideoUrl } from "@/lib/seoSchemaGenerator";
 import { FILM_DEPARTMENTS } from "@/lib/filmDepartments";
+import { ShowreelGallery } from "@/components/portfolio/ShowreelGallery";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import VerifiedTalentBadge from "@/components/portfolio/VerifiedTalentBadge";
 import { 
   Play, 
   Pause, 
@@ -27,9 +29,10 @@ import { useState, useRef } from "react";
 
 interface LivePortfolioPreviewProps {
   portfolio: PortfolioData;
+  onOpenVerification?: () => void;
 }
 
-export default function LivePortfolioPreview({ portfolio }: LivePortfolioPreviewProps) {
+export default function LivePortfolioPreview({ portfolio, onOpenVerification }: LivePortfolioPreviewProps) {
   const { profile, showreels, discography, headshots, filmCredits, equipmentKit } = portfolio;
   const [activeReel, setActiveReel] = useState<ShowreelItem | null>(showreels[0] || null);
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
@@ -77,6 +80,20 @@ export default function LivePortfolioPreview({ portfolio }: LivePortfolioPreview
             <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-mono uppercase tracking-wider text-white">
               {profile.discipline === "musician" ? "Recording Artist" : profile.discipline === "actor" ? "Theatrical & Screen Actor" : "Actor & Recording Artist"}
             </span>
+
+            {/* Verified Talent Badge (Pill or Unverified CTA) */}
+            <VerifiedTalentBadge
+              isVerified={profile.isVerifiedTalent}
+              talentName={profile.stageName}
+              discipline={profile.discipline}
+              badgeData={profile.verifiedBadge}
+              unions={profile.unionCredentials || profile.unions}
+              professionalLinks={profile.professionalLinks}
+              agencyRepresentation={profile.agencyRepresentation}
+              variant={profile.isVerifiedTalent ? "pill" : "unverified_cta"}
+              onOpenVerificationFlow={onOpenVerification}
+            />
+
             {profile.unions.map((u) => (
               <span
                 key={u}
@@ -87,9 +104,21 @@ export default function LivePortfolioPreview({ portfolio }: LivePortfolioPreview
             ))}
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold text-white tracking-tight">
-            {profile.stageName || "Artist Name"}
-          </h1>
+          <div className="flex flex-wrap items-baseline gap-3">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold text-white tracking-tight">
+              {profile.stageName || "Artist Name"}
+            </h1>
+            {profile.isVerifiedTalent && (
+              <VerifiedTalentBadge
+                isVerified={true}
+                talentName={profile.stageName}
+                discipline={profile.discipline}
+                badgeData={profile.verifiedBadge}
+                unions={profile.unionCredentials || profile.unions}
+                variant="compact"
+              />
+            )}
+          </div>
 
           <p className="text-lg text-gold font-medium">
             {profile.tagline || "Creator Portfolio & Sovereign Digital Presence"}
@@ -98,6 +127,23 @@ export default function LivePortfolioPreview({ portfolio }: LivePortfolioPreview
           <p className="text-sm text-zinc-300 max-w-2xl leading-relaxed">
             {profile.bio || "No biography added yet."}
           </p>
+
+          {/* If verified, show the prominent hero badge banner */}
+          {profile.isVerifiedTalent && (
+            <div className="pt-2 max-w-2xl">
+              <VerifiedTalentBadge
+                isVerified={true}
+                talentName={profile.stageName}
+                discipline={profile.discipline}
+                badgeData={profile.verifiedBadge}
+                unions={profile.unionCredentials || profile.unions}
+                professionalLinks={profile.professionalLinks}
+                agencyRepresentation={profile.agencyRepresentation}
+                variant="hero"
+                onOpenVerificationFlow={onOpenVerification}
+              />
+            </div>
+          )}
 
           {/* Key tags */}
           <div className="flex flex-wrap gap-1.5 pt-2">
@@ -180,93 +226,17 @@ export default function LivePortfolioPreview({ portfolio }: LivePortfolioPreview
       {/* Showreel Section */}
       {showreels.length > 0 && (
         <div className="space-y-6 pt-6 border-t border-white/10">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <div>
-              <h2 className="text-2xl font-display font-bold text-white flex items-center gap-2">
-                <Film className="w-5 h-5 text-gold" />
-                Featured Showreels & Media
-              </h2>
-              <p className="text-xs text-zinc-400">
-                High-definition theatrical reels and cinematic production footage.
-              </p>
-            </div>
-            <span className="text-xs font-mono text-zinc-500">
-              {showreels.length} reel(s) available
-            </span>
-          </div>
-
-          {activeReel && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              <div className="lg:col-span-8 aspect-video rounded-2xl overflow-hidden bg-black border border-white/15 shadow-xl">
-                {parsedActiveVideo?.embedUrl.includes("youtube.com/embed") ||
-                parsedActiveVideo?.embedUrl.includes("player.vimeo.com") ? (
-                  <iframe
-                    src={parsedActiveVideo.embedUrl}
-                    title={activeReel.title}
-                    className="w-full h-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center relative">
-                    <img
-                      src={activeReel.thumbnailUrl || "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=600&q=80"}
-                      alt={activeReel.title}
-                      className="absolute inset-0 w-full h-full object-cover opacity-40"
-                    />
-                    <div className="relative z-10 space-y-2">
-                      <Play className="w-12 h-12 text-gold mx-auto" />
-                      <Button
-                        variant="hero"
-                        size="sm"
-                        onClick={() => window.open(activeReel.url, "_blank")}
-                        className="text-xs"
-                      >
-                        Watch External Stream <ExternalLink className="w-3.5 h-3.5 ml-1" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="lg:col-span-4 space-y-3">
-                <span className="text-xs font-mono text-gold uppercase tracking-wider block">
-                  Now Playing
-                </span>
-                <h3 className="text-lg font-bold text-white">{activeReel.title}</h3>
-                {activeReel.roleOrCharacter && (
-                  <p className="text-xs font-semibold text-emerald-400">
-                    Role: {activeReel.roleOrCharacter}
-                  </p>
-                )}
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  {activeReel.description}
-                </p>
-                <div className="pt-3 border-t border-white/10 space-y-2">
-                  <span className="text-[11px] font-mono text-zinc-400 block uppercase">
-                    Select Reel:
-                  </span>
-                  <div className="space-y-1.5">
-                    {showreels.map((reel) => (
-                      <button
-                        key={reel.id}
-                        type="button"
-                        onClick={() => setActiveReel(reel)}
-                        className={`w-full text-left p-2.5 rounded-xl border text-xs transition-all flex items-center justify-between ${
-                          reel.id === activeReel.id
-                            ? "bg-gold/15 border-gold text-white font-semibold"
-                            : "bg-black/30 border-white/10 text-zinc-400 hover:border-white/20"
-                        }`}
-                      >
-                        <span className="truncate max-w-[200px]">{reel.title}</span>
-                        <span className="font-mono text-[10px] text-zinc-500">{reel.duration}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          <ShowreelGallery
+            showreels={showreels}
+            editable={false}
+            defaultPerspective={
+              profile.discipline === "actor"
+                ? "actor"
+                : profile.discipline === "film_crew"
+                ? "filmmaker"
+                : "all"
+            }
+          />
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { ShowreelItem } from "@/types/portfolio";
 import { parseVideoUrl } from "@/lib/seoSchemaGenerator";
+import { ShowreelGallery } from "@/components/portfolio/ShowreelGallery";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -14,13 +15,19 @@ import {
   Clock, 
   Sparkles,
   Clapperboard,
-  CheckCircle2
+  CheckCircle2,
+  LayoutGrid,
+  Edit3,
+  Award,
+  Camera,
+  Layers
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface ShowreelsManagerProps {
   showreels: ShowreelItem[];
-  onChange: (updated: ShowreelsItem[]) => void;
+  onChange: (updated: ShowreelItem[]) => void;
 }
 
 const CATEGORY_LABELS: Record<ShowreelItem['category'], string> = {
@@ -42,6 +49,7 @@ const CATEGORY_LABELS: Record<ShowreelItem['category'], string> = {
 
 export default function ShowreelsManager({ showreels, onChange }: ShowreelsManagerProps) {
   const [activePreviewId, setActivePreviewId] = useState<string | null>(showreels[0]?.id || null);
+  const [viewMode, setViewMode] = useState<"gallery" | "editor">("gallery");
 
   const addShowreel = () => {
     const newItem: ShowreelItem = {
@@ -51,6 +59,7 @@ export default function ShowreelsManager({ showreels, onChange }: ShowreelsManag
       category: "dramatic",
       roleOrCharacter: "Lead Detective",
       duration: "02:30",
+      resolution: "4K DCI",
       uploadDate: new Date().toISOString().split("T")[0],
       thumbnailUrl: "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=800&q=80",
       description: "High-intensity dialogue and dramatic monologue for feature film casting.",
@@ -58,6 +67,76 @@ export default function ShowreelsManager({ showreels, onChange }: ShowreelsManag
     };
     onChange([...showreels, newItem]);
     setActivePreviewId(newItem.id);
+  };
+
+  const loadSampleReels = () => {
+    const samples: ShowreelItem[] = [
+      {
+        id: "sr-sample-1",
+        title: "Dramatic Feature Casting Reel: 'Hollow Wire'",
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        category: "dramatic",
+        roleOrCharacter: "Detective Elena Vance",
+        duration: "02:45",
+        resolution: "4K DCI ProRes",
+        awardLaurel: "🏆 Sundance Film Festival Dramatic Competition",
+        cameraPackage: "ARRI Alexa Mini LF • Cooke Anamorphic /i Full Frame Plus",
+        uploadDate: "2026-02-14",
+        thumbnailUrl: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80",
+        description: "Intense interrogation sequence with scene partner Michael Shannon. Demonstrates rapid emotional arc and grounded vulnerability.",
+        scenePartner: "Michael Shannon",
+        isPrivate: false,
+      },
+      {
+        id: "sr-sample-2",
+        title: "Cinematographer DP Reel: Natural Light & Anamorphic",
+        url: "https://vimeo.com/76979871",
+        category: "cinematography",
+        roleOrCharacter: "Director of Photography",
+        duration: "03:15",
+        resolution: "4K Cinema 2.39:1",
+        awardLaurel: "🏆 Camerimage Golden Frog Nominee",
+        cameraPackage: "ARRI Alexa 35 • Zeiss Master Primes • Ronin 2 Rigging",
+        uploadDate: "2026-03-01",
+        thumbnailUrl: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?auto=format&fit=crop&w=800&q=80",
+        description: "Cinematography master reel showcasing low-light tungsten lighting, high-speed anamorphic tracking shots, and cinematic camera movement.",
+        isPrivate: false,
+      },
+      {
+        id: "sr-sample-3",
+        title: "Comedic Monologue & Improv Feature Cut",
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        category: "comedic",
+        roleOrCharacter: "Leo Sparks (Eccentric Tech Founder)",
+        duration: "01:50",
+        resolution: "1080p ProRes",
+        awardLaurel: "🏆 Tribeca Official Selection",
+        cameraPackage: "RED V-Raptor 8K • Leica Summilux-C",
+        uploadDate: "2026-01-20",
+        thumbnailUrl: "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?auto=format&fit=crop&w=800&q=80",
+        description: "Deadpan comedic timing and pitch presentation scene. Cast opposite premier ensemble players.",
+        isPrivate: false,
+      },
+      {
+        id: "sr-sample-4",
+        title: "Directing Anthology: Narrative Short 'Night Drift'",
+        url: "https://vimeo.com/76979871",
+        category: "directing",
+        roleOrCharacter: "Director & Co-Writer",
+        duration: "04:10",
+        resolution: "4K HDR Dolby Vision",
+        awardLaurel: "🏆 BAFTA Short Film Longlist",
+        cameraPackage: "Panavision Millennium DXL2 • Panaspeed 35mm",
+        uploadDate: "2025-11-12",
+        thumbnailUrl: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80",
+        description: "Nocturnal neo-noir pacing highlighting atmosphere, pacing, sound design, and actor chemistry in confined vehicle spaces.",
+        isPrivate: false,
+      },
+    ];
+
+    onChange(samples);
+    setActivePreviewId(samples[0].id);
+    toast.success("Loaded curated actor and filmmaker showreels!");
   };
 
   const updateShowreel = (id: string, updates: Partial<ShowreelItem>) => {
@@ -84,13 +163,44 @@ export default function ShowreelsManager({ showreels, onChange }: ShowreelsManag
             Showreels & Video Portfolio (Schema.org/VideoObject)
           </h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-xl">
-            Input acting reels, live concert footage, or music videos. Automatically mapped to Google Video Carousel structured data with ISO 8601 durations and thumbnails.
+            Responsive drag-and-drop media showcase for actors and filmmakers. Supports 16:9 4K thumbnails, category filtering, camera packages, and ISO 8601 rich snippet generation.
           </p>
         </div>
-        <Button onClick={addShowreel} variant="hero" size="sm" className="rounded-xl shrink-0">
-          <Plus className="w-4 h-4 mr-1.5" />
-          Add Showreel
-        </Button>
+
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {/* Mode switch */}
+          <div className="bg-black/50 border border-white/10 p-1 rounded-xl flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setViewMode("gallery")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                viewMode === "gallery" ? "bg-gold text-zinc-950 font-bold shadow-sm" : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              Interactive Gallery
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("editor")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                viewMode === "editor" ? "bg-gold text-zinc-950 font-bold shadow-sm" : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              Metadata Editor
+            </button>
+          </div>
+
+          <Button onClick={loadSampleReels} variant="outline" size="sm" className="rounded-xl border-white/20 text-xs">
+            <Sparkles className="w-3.5 h-3.5 mr-1 text-gold" /> Sample Reels
+          </Button>
+
+          <Button onClick={addShowreel} variant="hero" size="sm" className="rounded-xl shrink-0">
+            <Plus className="w-4 h-4 mr-1.5" />
+            Add Showreel
+          </Button>
+        </div>
       </div>
 
       {showreels.length === 0 ? (
@@ -100,11 +210,27 @@ export default function ShowreelsManager({ showreels, onChange }: ShowreelsManag
           <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 mb-4">
             Showreels provide the single highest engagement factor for casting directors, festival judges, and booking agents.
           </p>
-          <Button onClick={addShowreel} variant="outline" size="sm" className="border-white/20">
-            <Plus className="w-4 h-4 mr-1" /> Add First Showreel
-          </Button>
+          <div className="flex items-center justify-center gap-3">
+            <Button onClick={loadSampleReels} variant="hero" size="sm">
+              <Sparkles className="w-4 h-4 mr-1.5" /> Load Actor & Filmmaker Samples
+            </Button>
+            <Button onClick={addShowreel} variant="outline" size="sm" className="border-white/20">
+              <Plus className="w-4 h-4 mr-1" /> Add Empty Showreel
+            </Button>
+          </div>
+        </div>
+      ) : viewMode === "gallery" ? (
+        /* Visual Interactive Drag-and-Drop Gallery Mode */
+        <div className="space-y-4">
+          <ShowreelGallery
+            showreels={showreels}
+            onReorder={onChange}
+            onUpdateReel={updateShowreel}
+            editable={true}
+          />
         </div>
       ) : (
+        /* Form Editor Mode */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* List & Edit Forms */}
           <div className="lg:col-span-7 space-y-6">
@@ -127,6 +253,11 @@ export default function ShowreelsManager({ showreels, onChange }: ShowreelsManag
                       <span className="font-semibold text-sm text-white truncate max-w-[200px] sm:max-w-xs">
                         {reel.title || "Untitled Showreel"}
                       </span>
+                      {reel.awardLaurel && (
+                        <Badge variant="outline" className="border-gold/30 text-gold text-[10px] hidden sm:inline-flex">
+                          🏆 Award Winner
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
@@ -190,21 +321,48 @@ export default function ShowreelsManager({ showreels, onChange }: ShowreelsManag
                           <option value="dramatic">Dramatic Screen Reel</option>
                           <option value="comedic">Comedic Reel</option>
                           <option value="commercial">Commercial & VO</option>
-                          <option value="live_performance">Live Concert / Stage Gig</option>
-                          <option value="music_video">Cinematic Music Video</option>
+                          <option value="cinematography">Cinematography & Camera Reel</option>
+                          <option value="directing">Directing & Scene Anthology</option>
+                          <option value="editing_color">Editorial & Finishing Color Reel</option>
                           <option value="stunt">Stunt & Screen Combat</option>
                           <option value="voiceover">Voiceover & Animation</option>
+                          <option value="live_performance">Live Concert / Stage Gig</option>
+                          <option value="music_video">Cinematic Music Video</option>
                         </select>
                       </div>
 
                       <div className="space-y-1">
                         <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
-                          Character / Role Featured
+                          Character / Role (Actors)
                         </label>
                         <Input
                           value={reel.roleOrCharacter || ""}
                           onChange={(e) => updateShowreel(reel.id, { roleOrCharacter: e.target.value })}
                           placeholder="e.g. Det. Miller in 'Hollow Wire'"
+                          className="bg-black/40 border-white/15 text-sm"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
+                          Camera & Lens Kit (Filmmakers)
+                        </label>
+                        <Input
+                          value={reel.cameraPackage || ""}
+                          onChange={(e) => updateShowreel(reel.id, { cameraPackage: e.target.value })}
+                          placeholder="e.g. ARRI Alexa Mini LF • Cooke Anamorphic"
+                          className="bg-black/40 border-white/15 text-sm font-mono"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
+                          Festival Laurels & Awards
+                        </label>
+                        <Input
+                          value={reel.awardLaurel || ""}
+                          onChange={(e) => updateShowreel(reel.id, { awardLaurel: e.target.value })}
+                          placeholder="e.g. 🏆 Sundance Official Selection"
                           className="bg-black/40 border-white/15 text-sm"
                         />
                       </div>
@@ -226,12 +384,12 @@ export default function ShowreelsManager({ showreels, onChange }: ShowreelsManag
 
                       <div className="space-y-1">
                         <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
-                          Upload Date (YYYY-MM-DD)
+                          Resolution / Color
                         </label>
                         <Input
-                          type="date"
-                          value={reel.uploadDate || ""}
-                          onChange={(e) => updateShowreel(reel.id, { uploadDate: e.target.value })}
+                          value={reel.resolution || ""}
+                          onChange={(e) => updateShowreel(reel.id, { resolution: e.target.value })}
+                          placeholder="e.g. 4K DCI ProRes 4444"
                           className="bg-black/40 border-white/15 text-sm font-mono"
                         />
                       </div>
@@ -314,10 +472,16 @@ export default function ShowreelsManager({ showreels, onChange }: ShowreelsManag
                     {activeReel.roleOrCharacter && (
                       <p className="text-gold font-medium">Role: {activeReel.roleOrCharacter}</p>
                     )}
+                    {activeReel.cameraPackage && (
+                      <p className="text-zinc-300 font-mono text-[11px]">Camera: {activeReel.cameraPackage}</p>
+                    )}
+                    {activeReel.awardLaurel && (
+                      <p className="text-gold font-medium text-[11px]">{activeReel.awardLaurel}</p>
+                    )}
                     <p className="text-zinc-400 leading-relaxed">{activeReel.description}</p>
                     <div className="pt-2 flex flex-wrap items-center gap-3 text-[11px] font-mono text-zinc-500 border-t border-white/10">
                       <span>Duration: {activeReel.duration || "N/A"}</span>
-                      <span>Uploaded: {activeReel.uploadDate || "N/A"}</span>
+                      <span>Resolution: {activeReel.resolution || "HD"}</span>
                       <span className="text-emerald-400 flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" /> SEO Schema Ready
                       </span>

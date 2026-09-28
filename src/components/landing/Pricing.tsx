@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Sparkles, Shield, Loader2, CreditCard, Globe, Search, PlusCircle, CheckCircle2 } from "lucide-react";
+import { Check, Sparkles, Shield, Loader2, CreditCard, Globe, Search, PlusCircle, CheckCircle2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +17,7 @@ export default function Pricing() {
     suggestions: Array<{ domain: string; tld: string; upsellPriceUsd: number }>;
   } | null>(null);
   const [includeDomainUpsell, setIncludeDomainUpsell] = useState(false);
+  const [includeMailUpsell, setIncludeMailUpsell] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState("artistname.com");
   const [selectedDomainPrice, setSelectedDomainPrice] = useState(12.00);
 
@@ -124,6 +125,14 @@ export default function Pricing() {
         };
       }
 
+      if (includeMailUpsell) {
+        payload.mailUpsell = {
+          enabled: true,
+          domain: selectedDomain || "alistwebs.com",
+          priceUsd: tier.id === "yearly" ? 49.0 : 5.0,
+        };
+      }
+
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,11 +141,27 @@ export default function Pricing() {
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else if (data.needsKey) {
+        toast({
+          title: "Stripe Key Setup Required",
+          description: data.message || "Please provide your live or test STRIPE_SECRET_KEY (starts with sk_test_ or sk_live_) in Settings.",
+          variant: "destructive",
+        });
+      } else if (data.error) {
+        toast({
+          title: "Stripe Error",
+          description: data.error,
+          variant: "destructive",
+        });
       } else {
         navigate("/build");
       }
     } catch {
-      navigate("/build");
+      toast({
+        title: "Checkout Error",
+        description: "Failed to communicate with checkout service.",
+        variant: "destructive",
+      });
     } finally {
       setLoadingTier(null);
     }
@@ -277,6 +302,37 @@ export default function Pricing() {
                   </label>
                 </div>
               )}
+
+              {/* Alist Mail Sovereign Suite Upsell */}
+              <div className="p-3.5 rounded-xl bg-gradient-to-r from-card to-gold/10 border border-gold/40 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gold/15 border border-gold/30 flex items-center justify-center text-gold shrink-0">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 font-medium text-foreground">
+                      <span>Alist Mail Sovereign Suite</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-gold/20 text-gold font-semibold">
+                        +$5/mo
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Official <span className="font-mono text-gold font-medium">booking@</span> &amp; <span className="font-mono text-gold font-medium">press@</span> inboxes on your domain with SPF/DKIM verification.
+                    </p>
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={includeMailUpsell}
+                    onChange={(e) => setIncludeMailUpsell(e.target.checked)}
+                    className="w-4 h-4 rounded text-gold focus:ring-gold border-border cursor-pointer accent-[#D4AF37]"
+                  />
+                  <span className="font-mono text-[11px] font-medium text-gold">
+                    {includeMailUpsell ? "Bundled ✓" : "Add to plan"}
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
         </motion.div>

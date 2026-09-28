@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Sparkles, LogOut, User, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ export default function Navbar() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     setMounted(true);
@@ -46,10 +47,26 @@ export default function Navbar() {
   const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     setIsOpen(false);
-    const target = document.querySelector(href);
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth" });
+
+    // If currently on another route (e.g. /build, /mail, /signup), navigate to home with hash
+    if (location.pathname !== "/") {
+      navigate("/" + href);
+      return;
     }
+
+    // Give time for mobile menu collapse so getBoundingClientRect reflects stable page layout
+    setTimeout(() => {
+      const target = document.querySelector(href);
+      if (target) {
+        const navHeight = 80;
+        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
+        window.scrollTo({
+          top: targetPosition,
+          behavior: "smooth",
+        });
+        window.history.pushState(null, "", href);
+      }
+    }, 100);
   };
 
   const themeToggle = mounted ? (
@@ -116,6 +133,13 @@ export default function Navbar() {
           >
             Help & How-To
           </a>
+          <Link
+            to="/signup"
+            className="text-gold hover:text-gold/80 transition-colors tracking-wide flex items-center gap-1"
+          >
+            <span>Domain Mail</span>
+            <span className="bg-gold/20 text-gold text-[9px] font-mono px-1 rounded">PRO</span>
+          </Link>
           <Link
             to="/build"
             className="text-muted-foreground hover:text-foreground transition-colors tracking-wide"
@@ -226,6 +250,14 @@ export default function Navbar() {
               >
                 Help & How-To
               </a>
+              <Link
+                to="/signup"
+                onClick={() => setIsOpen(false)}
+                className="text-sm text-gold font-medium hover:text-gold/80 transition-colors flex items-center justify-between"
+              >
+                <span>Domain Mail Suite</span>
+                <span className="bg-gold/20 text-gold text-[10px] font-mono px-1.5 py-0.5 rounded">NEW</span>
+              </Link>
               <Link
                 to="/build"
                 onClick={() => setIsOpen(false)}

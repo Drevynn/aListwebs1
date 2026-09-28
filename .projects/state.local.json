@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "project": {
+    "catalog": "prod",
+    "initializedAt": "2026-09-23T02:02:28.395Z",
+    "merchantDisplayName": null,
+    "merchantId": "acct_1UGf8m4pG09uyqeX",
+    "projectId": "project_61VS3TI4oEAR5J9Lj16VQ3689TSQpD8S4CRlY5P3gTse",
+    "projectName": "applet"
+  },
+  "providers": {
+    "supabase": {
+      "accountRequestId": "facctrq_61VS3Tllh6jgHwzDW16VQ3689TSQpD8S4CRlY5P3gMGm",
+      "configuration": {},
+      "linkedAt": "2026-09-23T02:03:12.313Z",
+      "providerId": "prvdr_61UIXYHdsyF69pZbG52n2",
+      "providerName": "Supabase",
+      "redirectUrl": null,
+      "requestedAt": "2026-09-23T02:03:12.313Z",
+      "status": "complete"
+    }
+  },
+  "resources": {
+    "supabase-plan": {
+      "configuration": {},
+      "createdAt": "2026-09-23T02:03:31.337Z",
+      "lastRevealedAt": "2026-09-23T02:03:31.585Z",
+      "lastStatus": "complete",
+      "name": "supabase-plan",
+      "providerId": "prvdr_61UIXYHdsyF69pZbG52n2",
+      "providerName": "Supabase",
+      "resourceId": "fres_61VS3U0aMNhFI50r916VQ3689TSQpD8S4CRlY5P3g5hY",
+      "serviceId": "free"
+    },
+    "supabase-project": {
+      "configuration": {
+        "name": "applet"
+      },
+      "createdAt": "2026-09-23T02:03:56.034Z",
+      "lastRevealedAt": "2026-09-23T02:03:56.288Z",
+      "lastStatus": "complete",
+      "name": "supabase-project",
+      "providerId": "prvdr_61UIXYHdsyF69pZbG52n2",
+      "providerName": "Supabase",
+      "resourceId": "fres_61VS3UPjcF3D09Mbt16VQ3689TSQpD8S4CRlY5P3gBVI",
+      "serviceId": "project"
+    }
+  }
+}

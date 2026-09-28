@@ -62,10 +62,26 @@ const Navbar = () => {
   }, [location.pathname]);
 
   const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, selector: string) => {
+    e.preventDefault();
+    setIsOpen(false);
+
     if (location.pathname !== "/") {
-      e.preventDefault();
       navigate("/" + selector);
+      return;
     }
+
+    setTimeout(() => {
+      const target = document.querySelector(selector);
+      if (target) {
+        const navHeight = 80;
+        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
+        window.scrollTo({
+          top: targetPosition,
+          behavior: "smooth",
+        });
+        window.history.pushState(null, "", selector);
+      }
+    }, 100);
   };
 
   const toggleTheme = () => {
