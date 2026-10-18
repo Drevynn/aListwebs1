@@ -26,7 +26,7 @@ interface AuthContextType {
   refreshAdminStatus: () => Promise<boolean>;
 }
 
-const ADMIN_EMAILS = ["dev@alistwebs.com", "admin@alistwebs.com"];
+const ADMIN_EMAILS = ["dev@alistwebs.com", "admin@alistwebs.com", "tester@alistwebs.com"];
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

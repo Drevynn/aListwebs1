@@ -1,4 +1,15 @@
-import type { PortfolioData } from "./types/portfolio";
+export interface SeoMetadata {
+  metaTitle?: string;
+  metaDescription?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  keywords?: string[];
+  canonicalUrl?: string;
+  authorName?: string;
+  twitterHandle?: string;
+  updatedAt?: string;
+}
 
 export interface Site {
   id: string;
@@ -14,7 +25,7 @@ export interface Site {
   published_url?: string;
   view_count?: number;
   tags?: string[];
-  portfolio_data?: PortfolioData;
+  seoMetadata?: SeoMetadata;
 }
 
 export interface UserProfile {

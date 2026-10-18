@@ -1,34 +1,45 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { HelpCircle, ChevronDown, Sparkles } from "lucide-react";
+import { HelpCircle, ChevronDown } from "lucide-react";
 
 export default function FAQ() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   const faqs = [
     {
-      question: "Who is A-list Websites built for?",
-      answer: "A-list Websites is purpose-built for independent creators, musicians, bands, filmmakers, actors, screenwriters, authors, and influencers who want a professional digital headquarters without rented platform lock-in.",
+      question: "How is AlistWebs different from generic website builders like Wix or Squarespace?",
+      answer:
+        "Generic builders are designed for dental clinics and corporate SaaS. They don't know what an Electronic Press Kit (EPK) is, compress 24-bit audio into muddy MP3s, and force you to pay Google Workspace $7.20/mo just for a booking email. AlistWebs is purpose-built for musicians, filmmakers, and creators: an all-in-one stack with custom webmail, lossless media players, and festival-ready press decks.",
     },
     {
-      question: "Can I connect my own custom domain name?",
-      answer: "Yes. All paid sovereign plans allow you to map your own custom domain name (e.g. yourname.com or theband.com) with automated zero-config SSL certificates and lightning-fast global edge delivery.",
+      question: "Do I really get custom domain email included without paying Google Workspace?",
+      answer:
+        "Yes! Every subscription includes native custom-domain email addresses (e.g. booking@yourband.com or press@filmmaker.com). You get a full webmail interface, inbox management, and automatic DNS routing without paying a monthly per-seat fee to Google or Microsoft.",
     },
     {
-      question: "How does Google Docs synchronization work?",
-      answer: "You can link your Google account via OAuth and connect a dedicated Google Doc. Whenever you update tour dates, press releases, or your biography in Google Docs, your website reflects the changes instantly.",
+      question: "What is an Electronic Press Kit (EPK) and why do I need one?",
+      answer:
+        "An EPK is the gold standard used by booking agents, festival programmers, label A&Rs, and music supervisors. It packages your verified bio, downloadable 300DPI promo photos, streaming tracks, technical stage riders, and press quotes into one clean, high-impact link.",
     },
     {
-      question: "Do you take a percentage of my sales or ticket revenue?",
-      answer: "No. We take 0% commission on your music downloads, merchandise, ticket sales, or screening fees. All payments connect directly to your Stripe merchant account.",
+      question: "Can I stream uncompressed audio and 4K showreels without quality loss?",
+      answer:
+        "Yes. Standard website builders compress uploaded media to save bandwidth. AlistWebs is engineered for artists: our player supports 24-bit FLAC/WAV streaming and 4K showreels with password-protected screener links for private film festival submissions.",
     },
     {
-      question: "How do I protect my original creative work?",
-      answer: "We partner with Sovranly IP to provide creators with immutable proof-of-authorship certificates, copyright timestamps, and trademark verification directly from our platform.",
+      question: "How does the Cloud & Google Docs sync work?",
+      answer:
+        "You can connect your Google Drive or Dropbox folders. When you update tour dates or add tracks to your synced folder, your live site and press kit update automatically without needing to re-open a website builder.",
     },
     {
-      question: "Can I cancel my subscription anytime?",
-      answer: "Yes, you can cancel your subscription instantly with one click from your billing dashboard modal. There are no long-term cancellation penalties.",
+      question: "Do you take any cut of my ticket sales, merch, or download revenue?",
+      answer:
+        "Zero percent. All ticket sales, VIP merch, and digital downloads connect directly to your Stripe account. You keep 100% of your earnings.",
+    },
+    {
+      question: "Can I cancel anytime?",
+      answer:
+        "Yes, you can cancel your subscription instantly with one click from your billing manager. No long-term lock-in or cancellation fees.",
     },
   ];
 
@@ -38,13 +49,13 @@ export default function FAQ() {
         <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-mono uppercase tracking-widest font-semibold">
             <HelpCircle className="w-3.5 h-3.5" />
-            Got Questions?
+            Clear Answers
           </div>
           <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
             Frequently Asked Questions
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base">
-            Everything you need to know about launching and managing your sovereign creator website.
+            Everything you need to know about launching and managing your sovereign creator headquarters.
           </p>
         </div>
 
@@ -71,7 +82,9 @@ export default function FAQ() {
                   </span>
                   <div
                     className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 transition-transform ${
-                      isOpen ? "rotate-180 bg-gold text-white border-gold shadow-md shadow-gold/20" : "bg-muted text-foreground/70 border-border"
+                      isOpen
+                        ? "rotate-180 bg-gold text-white border-gold shadow-md shadow-gold/20"
+                        : "bg-muted text-foreground/70 border-border"
                     }`}
                   >
                     <ChevronDown className="w-4 h-4" />
@@ -84,12 +97,10 @@ export default function FAQ() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="border-t border-border px-6 pb-6 pt-4 bg-muted/40"
+                      transition={{ duration: 0.2 }}
+                      className="px-6 pb-6 text-sm text-muted-foreground leading-relaxed border-t border-border/40 pt-4"
                     >
-                      <p className="text-sm text-foreground/80 leading-relaxed font-normal">
-                        {faq.answer}
-                      </p>
+                      {faq.answer}
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -34,19 +34,32 @@ export default function Hero() {
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-burgundy/40 border border-gold/40 text-gold-light text-xs font-mono uppercase tracking-widest mx-auto lg:mx-0 shadow-lg shadow-burgundy/30 backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5 text-gold animate-pulse" />
-              <span>Hollywood Sovereign Web Presence</span>
+              <span>All-In-One Creative Headquarters</span>
             </div>
 
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground leading-[1.08]">
-              Step Onto The Red Carpet.{" "}
+              The Digital Headquarters For{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-gold-light to-amber-500 drop-shadow-sm">
-                Own Your Creative Empire.
+                Musicians, Filmmakers & Creators.
               </span>
             </h1>
 
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              Designed for Hollywood talent, film crews, actors, musicians, and directors. Launch an elite, sovereign digital headquarters with zero middleman commissions, verified union credits, and instant Hollywood Genius AI intelligence.
+              Stop paying $65/month across a fragmented stack of website builders, Google Workspace email seats, EPK hosts, and file storage. Get your industry-grade press kit, turnkey custom webmail (<span className="text-gold font-mono">booking@yourname.com</span>), lossless media players, and 0% commission store in one sovereign link.
             </p>
+
+            {/* Persona Quick Chips */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-1">
+              <span className="px-3 py-1 rounded-lg bg-zinc-900 border border-white/10 text-xs font-mono text-zinc-300 flex items-center gap-1.5 shadow-sm">
+                <span>🎵</span> Musicians & Bands
+              </span>
+              <span className="px-3 py-1 rounded-lg bg-zinc-900 border border-white/10 text-xs font-mono text-zinc-300 flex items-center gap-1.5 shadow-sm">
+                <span>🎬</span> Filmmakers & Actors
+              </span>
+              <span className="px-3 py-1 rounded-lg bg-zinc-900 border border-white/10 text-xs font-mono text-zinc-300 flex items-center gap-1.5 shadow-sm">
+                <span>✍️</span> Authors & Writers
+              </span>
+            </div>
 
             {/* Primary & Secondary Action buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
@@ -55,7 +68,7 @@ export default function Hero() {
                 onClick={() => navigate("/build")}
                 className="gap-2 text-sm px-8 py-4 w-full sm:w-auto shadow-xl shadow-gold/25 font-bold rounded-xl bg-gradient-to-r from-burgundy via-burgundy-light to-gold text-white hover:brightness-110 transition-all"
               >
-                <span>SIGN UP / START FREE</span>
+                <span>START FREE / LAUNCH YOUR HQ</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
 
@@ -77,11 +90,11 @@ export default function Hero() {
               </span>
               <span className="flex items-center gap-1.5 font-medium">
                 <ShieldCheck className="w-4 h-4 text-gold" />
-                16 Film Departments & IATSE scale
+                Custom domain webmail included
               </span>
               <span className="flex items-center gap-1.5 font-medium">
                 <Star className="w-4 h-4 text-gold" />
-                Hollywood Genius AI included
+                Keep 100% of your earnings
               </span>
             </div>
           </motion.div>

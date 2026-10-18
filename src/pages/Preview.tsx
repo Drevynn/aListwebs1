@@ -4,10 +4,9 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Site } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, Music, FileText, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Loader2, Music, FileText } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { CreateSiteDocDialog } from "@/components/docs/CreateSiteDocDialog";
-import VerifiedTalentBadge from "@/components/portfolio/VerifiedTalentBadge";
 
 const PreviewPage = () => {
   const { siteId } = useParams();
@@ -24,7 +23,32 @@ const PreviewPage = () => {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setSite({ id: docSnap.id, ...docSnap.data() } as Site);
+          const siteData = { id: docSnap.id, ...docSnap.data() } as Site;
+          setSite(siteData);
+
+          // Dynamically apply SEO title and meta tags
+          const seo = siteData.seoMetadata;
+          const title = seo?.metaTitle || siteData.name || "Creator Headquarters";
+          document.title = title;
+
+          const setMetaTag = (attrName: string, attrVal: string, content: string) => {
+            if (!content) return;
+            let el = document.querySelector(`meta[${attrName}="${attrVal}"]`);
+            if (!el) {
+              el = document.createElement("meta");
+              el.setAttribute(attrName, attrVal);
+              document.head.appendChild(el);
+            }
+            el.setAttribute("content", content);
+          };
+
+          if (seo?.metaDescription) setMetaTag("name", "description", seo.metaDescription);
+          if (seo?.ogTitle || seo?.metaTitle) setMetaTag("property", "og:title", seo?.ogTitle || seo?.metaTitle || title);
+          if (seo?.ogDescription || seo?.metaDescription) setMetaTag("property", "og:description", seo?.ogDescription || seo?.metaDescription || "");
+          if (seo?.ogImage) setMetaTag("property", "og:image", seo.ogImage);
+          if (seo?.keywords && seo.keywords.length > 0) setMetaTag("name", "keywords", seo.keywords.join(", "));
+          if (seo?.authorName) setMetaTag("name", "author", seo.authorName);
+          if (seo?.twitterHandle) setMetaTag("name", "twitter:creator", seo.twitterHandle);
         } else {
           console.error("No such document!");
           navigate("/");
@@ -81,22 +105,6 @@ const PreviewPage = () => {
           <h1 className="text-6xl md:text-8xl font-display font-bold tracking-tighter text-white uppercase">
             {site?.name || "Untitled Site"}
           </h1>
-
-          {/* If the site is linked to verified talent */}
-          {site?.portfolio_data?.profile?.isVerifiedTalent && (
-            <div className="flex justify-center pt-1">
-              <VerifiedTalentBadge
-                isVerified={true}
-                talentName={site.portfolio_data.profile.stageName || site.name}
-                discipline={site.portfolio_data.profile.discipline}
-                badgeData={site.portfolio_data.profile.verifiedBadge}
-                unions={site.portfolio_data.profile.unionCredentials || site.portfolio_data.profile.unions}
-                professionalLinks={site.portfolio_data.profile.professionalLinks}
-                variant="pill"
-              />
-            </div>
-          )}
-
           <p className="text-xl md:text-2xl text-white/60 max-w-2xl mx-auto font-light">
             Sovereign Digital Presence
           </p>

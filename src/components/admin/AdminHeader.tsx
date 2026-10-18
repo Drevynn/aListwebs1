@@ -15,13 +15,12 @@ import { Badge } from "@/components/ui/badge";
 
 interface AdminHeaderProps {
   adminEmail: string;
-  activeTab: "analytics" | "subscriptions" | "verifications";
-  setActiveTab: (tab: "analytics" | "subscriptions" | "verifications") => void;
+  activeTab: "analytics" | "subscriptions" | "seo";
+  setActiveTab: (tab: "analytics" | "subscriptions" | "seo") => void;
   onRefresh: () => void;
   isRefreshing: boolean;
   totalSites: number;
   totalSubscribers: number;
-  totalVerifications?: number;
   isStripeConfigured: boolean;
 }
 
@@ -33,7 +32,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   isRefreshing,
   totalSites,
   totalSubscribers,
-  totalVerifications = 0,
   isStripeConfigured,
 }) => {
   return (
@@ -82,36 +80,36 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           <div className="inline-flex p-1 rounded-2xl bg-background/80 border border-glass-border backdrop-blur-md">
             <button
               onClick={() => setActiveTab("analytics")}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === "analytics"
                   ? "bg-gold text-black shadow-md shadow-gold/20"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Globe className="w-4 h-4" />
-              Site Analytics ({totalSites})
+              <span>Site Analytics ({totalSites})</span>
             </button>
             <button
               onClick={() => setActiveTab("subscriptions")}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === "subscriptions"
                   ? "bg-gold text-black shadow-md shadow-gold/20"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <CreditCard className="w-4 h-4" />
-              Subscriptions ({totalSubscribers})
+              <span>Subscriptions ({totalSubscribers})</span>
             </button>
             <button
-              onClick={() => setActiveTab("verifications")}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === "verifications"
+              onClick={() => setActiveTab("seo")}
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                activeTab === "seo"
                   ? "bg-gold text-black shadow-md shadow-gold/20"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <ShieldCheck className="w-4 h-4" />
-              Talent Verifications {totalVerifications > 0 ? `(${totalVerifications})` : ""}
+              <Sparkles className="w-4 h-4 text-black dark:text-black" />
+              <span>SEO & Social Tags</span>
             </button>
           </div>
 

@@ -4,20 +4,20 @@ import { Sparkles, CheckCircle2, ShieldCheck, Zap, Globe, Cpu } from "lucide-rea
 export default function Solution() {
   const outcomes = [
     {
-      title: "Launch in Minutes with AI Design Studio",
-      description: "Describe your aesthetic in plain English or pick a musician, filmmaker, or writer preset. Our AI engine compiles a lightning-fast, high-contrast digital headquarters instantly.",
+      title: "Interactive Electronic Press Kit (EPK)",
+      description: "Equip label A&Rs, music supervisors, festival programmers, and booking agents with your downloadable 300DPI press photos, tour schedule, bio, and technical rider.",
     },
     {
-      title: "100% Data & Revenue Sovereignty",
-      description: "Keep 100% of your earnings. Connect your Stripe account directly for ticket sales, merch, and lossless downloads with zero middleman commissions.",
+      title: "Built-In Custom Domain Webmail",
+      description: "Stop paying Google Workspace $7.20/month per seat. Every site includes dedicated inboxes (booking@, press@, contact@) with webmail access out of the box.",
     },
     {
-      title: "Real-Time Google Docs Synchronization",
-      description: "Update tour dates, setlists, biographies, and press announcements on the go inside Google Docs. Your website updates automatically in real-time.",
+      title: "Pristine Lossless Audio & 4K Showreels",
+      description: "Host uncompressed 24-bit FLAC audio masters, 4K showreels, and password-protected festival screeners with zero buffering or muddy compression artifacts.",
     },
     {
-      title: "Pristine Media & Screener Portals",
-      description: "Host uncompressed 24-bit FLAC audio players, 4K showreels, password-protected festival screeners, and 300DPI press kits with absolute elegance.",
+      title: "100% Direct Fan Revenue (0% Cut)",
+      description: "Keep 100% of your earnings. Connect your Stripe account directly for ticket sales, VIP merch, and lossless downloads with zero middleman commissions.",
     },
   ];
 

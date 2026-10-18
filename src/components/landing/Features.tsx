@@ -1,37 +1,43 @@
 import { motion } from "framer-motion";
-import { Sparkles, Music, Film, UserCheck, Globe, FileText, ShieldCheck } from "lucide-react";
+import { Sparkles, Music, Film, Mail, Globe, Search, RefreshCw, FileText } from "lucide-react";
 
 export default function Features() {
   const features = [
     {
       icon: Music,
-      title: "Lossless Audio & Stage Riders",
-      description: "Stream uncompressed 24-bit FLAC masters, embed Apple Music/Spotify links, and share technical input lists with venue sound engineers.",
+      title: "Interactive EPK & Press Engine",
+      description:
+        "Give booking agents, festival curators, and label A&Rs a dedicated press kit with downloadable high-res assets, tour dates, bios, and technical stage riders in one click.",
+    },
+    {
+      icon: Mail,
+      title: "Turnkey Domain Webmail (/mail)",
+      description:
+        "Every site includes a dedicated custom-domain inbox (e.g. booking@yourband.com or press@filmmaker.com). Stop paying Google Workspace $7.20/mo per seat.",
     },
     {
       icon: Film,
-      title: "4K Showreels & Festival Screeners",
-      description: "Host high-bitrate video showreels, protect private cuts with custom festival screener passcodes, and display award laurels.",
+      title: "Lossless Audio & 4K Screener Hub",
+      description:
+        "Stream uncompressed 24-bit FLAC audio masters and 4K showreels. Protect private festival cuts and unreleased albums with secure screener passcodes.",
     },
     {
-      icon: UserCheck,
-      title: "Casting Dossiers & SAG Credits",
-      description: "Equip casting directors and agents with downloadable 300DPI headshots, scene reels, and complete credit matrices.",
+      icon: RefreshCw,
+      title: "Lossless Cloud & Drive Sync",
+      description:
+        "Sync tour dates, stem files, and high-res photos directly from Google Drive, Dropbox, or OneDrive. Update your live site without opening a web builder.",
+    },
+    {
+      icon: Search,
+      title: "Dynamic SEO & Social Share Studio",
+      description:
+        "Fine-tune your Google search rankings, meta descriptions, and Open Graph social preview cards for iMessage, WhatsApp, and X directly from your studio dashboard.",
     },
     {
       icon: Globe,
-      title: "Custom Domain & SSL Mapping",
-      description: "Map your own domain (e.g. artistname.com) with automated zero-downtime HTTPS security certificates and lightning-fast edge CDN.",
-    },
-    {
-      icon: FileText,
-      title: "Google Docs Real-Time Sync",
-      description: "Manage tour dates, setlists, biographies, and press releases in Google Docs and have your live website update instantly.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Sovereign IP Protection",
-      description: "Protect original works, copyright provenance, and authorship timestamps directly through our integrated Sovranly IP partnership.",
+      title: "Custom Domain & Edge CDN",
+      description:
+        "Connect your own custom domain (e.g. yourname.com) with automated SSL encryption and lightning-fast global edge delivery with 99.9% uptime.",
     },
   ];
 
@@ -41,13 +47,13 @@ export default function Features() {
         <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-mono uppercase tracking-widest font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
-            Powerful Capabilities
+            Built For Serious Careers
           </div>
           <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-            Everything a Professional Creator Needs
+            Capabilities Generic Builders Don&apos;t Offer
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base">
-            Engineered specifically for musicians, filmmakers, actors, and writers who demand absolute excellence.
+            Engineered specifically for musicians, filmmakers, actors, and authors who demand an integrated creative ecosystem.
           </p>
         </div>
 

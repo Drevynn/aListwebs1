@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles, Hammer, Globe, Rocket, ArrowRight } from "lucide-react";
+import { Sparkles, Compass, RefreshCw, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -9,21 +9,24 @@ export default function HowItWorks() {
   const steps = [
     {
       number: "01",
-      icon: Hammer,
-      title: "Build & Customize",
-      description: "Use the AI Design Studio or Portfolio Generator to pick your creative discipline and assemble your bio, media, and touring schedules in seconds.",
+      icon: Compass,
+      title: "Select Your Creative Discipline",
+      description:
+        "Choose Musician, Filmmaker, Actor, or Author. The system instantly pre-configures standard industry layouts (EPK decks, rider downloads, or casting credits).",
     },
     {
       number: "02",
-      icon: Globe,
-      title: "Connect & Sync",
-      description: "Map your custom domain name with zero-config SSL certificates and link Google Docs for effortless real-time updates.",
+      icon: RefreshCw,
+      title: "Sync Your Audio, Reels & Media",
+      description:
+        "Connect Google Drive or Dropbox to sync uncompressed WAV stems, 4K showreels, or manuscripts. No manual re-uploading whenever you make changes.",
     },
     {
       number: "03",
-      icon: Rocket,
-      title: "Publish & Own",
-      description: "Deploy to global edge CDN with instant HTTPS. Accept payments and connect directly with fans with zero middleman commissions.",
+      icon: Mail,
+      title: "Claim Your Webmail & Go Live",
+      description:
+        "Activate your included custom-domain webmail (booking@yourname.com) and publish to global Edge CDN with automated SSL in under 60 seconds.",
     },
   ];
 
@@ -84,9 +87,9 @@ export default function HowItWorks() {
           <Button
             variant="hero"
             onClick={() => navigate("/build")}
-            className="gap-2 text-sm px-6 py-3"
+            className="gap-2 text-sm px-8 py-4 shadow-xl shadow-gold/20 font-bold rounded-xl bg-gradient-to-r from-burgundy via-burgundy-light to-gold text-white hover:brightness-110"
           >
-            <span>Start Building Now</span>
+            <span>START FREE / LAUNCH YOUR HQ</span>
             <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
